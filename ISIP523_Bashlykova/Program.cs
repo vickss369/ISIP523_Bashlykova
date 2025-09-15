@@ -31,7 +31,25 @@ namespace ISIP523_Bashlykova
                 pokypki[i] = Console.ReadLine();
                 Console.WriteLine("Введите сумму покупки: ");
                 sums[i] = Convert.ToInt32(Console.ReadLine());
-                Console.WriteLine();
+            }
+
+            bool outt = true;
+            while (outt)
+            {
+                Console.WriteLine("\nМЕНЮ");
+                Console.WriteLine("1.Вывод данных");
+                Console.WriteLine("2.Статистика(среднее, максимальное, минимальное, сумма)");
+                Console.WriteLine("3.Сортировка по цене(пузырьковая сортировка)");
+                Console.WriteLine("4.Конвертация валюты(пользователь вводит курс или выбирает из списка)");
+                Console.WriteLine("5.Поиск по названию");
+                Console.WriteLine("0.Выход");
+
+                Console.Write("Введите выбор: ");
+                int choice = Convert.ToInt32(Console.ReadLine());
+                switch (choice)
+                {
+                    case 0: outt = false; break;
+                }
             }
 
             /*for (int i = 0; i < kolvoop; i++)
