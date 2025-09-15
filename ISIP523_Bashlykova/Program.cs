@@ -23,7 +23,7 @@ namespace ISIP523_Bashlykova
             Console.Write("Введите количество зафиксированных операций (2-40): ");
             int kolvoop = Convert.ToInt32(Console.ReadLine());
             string[] pokypki = new string[kolvoop];
-            int[] sums = new int[kolvoop];
+            double[] sums = new double[kolvoop];
             for (int i = 0; i < kolvoop; i++) 
             {
                 Console.WriteLine();
@@ -58,8 +58,8 @@ namespace ISIP523_Bashlykova
 
                     case 2:
                         double srar = 0;
-                        int maxim = sums[0];
-                        int minim = sums[1];
+                        double maxim = sums[0];
+                        double minim = sums[1];
                         int summ = 0;
                         Console.WriteLine();
                         foreach (int i in sums)
@@ -73,15 +73,18 @@ namespace ISIP523_Bashlykova
                         break;
 
                     case 3:
-                        for (int i = 0; i < sums.Length - 1; i++)
+                        for (int i = 0; i < kolvoop - 1; i++)
                         {
-                            for (int j = sums.Length - 2; j >= i; j--)
+                            for (int j = kolvoop - 2; j >= i; j--)
                             {
                                 if (sums[j] > sums[j + 1])
                                 {
-                                    int v = sums[j];
+                                    double v = sums[j];
+                                    string p = pokypki[j];
                                     sums[j] = sums[j + 1];
+                                    pokypki[j] = pokypki[j + 1];
                                     sums[j + 1] = v;
+                                    pokypki[j + 1] = p;
                                 }
                             }
                         }
@@ -89,6 +92,40 @@ namespace ISIP523_Bashlykova
                         break;
 
                     case 4:
+                        Console.WriteLine("\nМЕНЮ ВАЛЮТ");
+                        Console.WriteLine("1.Доллары");
+                        Console.WriteLine("2.Евро");
+                        Console.WriteLine("3.Свой вариант");
+                        Console.Write("Введите выбор: ");
+                        int choiseval = Convert.ToInt32(Console.ReadLine());
+                        switch(choiseval)
+                        {
+                            case 1:
+                                for (int i = 0; i < kolvoop; i++)
+                                {
+                                    sums[i] = sums[i] * 0.012;
+                                }
+                                break;
+
+                            case 2:
+                                for (int i = 0; i < kolvoop; i++)
+                                {
+                                    sums[i] = sums[i] * 0.010;
+                                }
+                                break;
+
+                            case 3:
+                                Console.Write("Введите свой курс: ");
+                                double kurs = Convert.ToDouble(Console.ReadLine()); 
+                                for (int i = 0; i < kolvoop; i++)
+                                {
+                                    sums[i] = sums[i] * kurs;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                        Console.WriteLine("\nКонвертировано.");
                         break;
 
                     case 5:
