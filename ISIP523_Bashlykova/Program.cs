@@ -89,9 +89,26 @@ namespace ISIP523_Bashlykova
                         break;
 
                     case 4:
-                        break;
+                        
+                    break;
 
                     case 5:
+                        Console.WriteLine();
+                        Console.Write("Введите название искомого товара: ");
+                        string nazvtovar = Console.ReadLine();
+                        bool poisk = false;
+                        for (int i = 0; i < kolvoop; i++)
+                        {
+                            if (pokypki[i] == nazvtovar)
+                            {
+                                Console.WriteLine("Товар: " + pokypki[i] + ", цена: " + sums[i]);
+                                poisk = true;
+                            }
+                        }
+                        if (!poisk)
+                        {
+                            Console.WriteLine("Товар " + nazvtovar + " не найден.");
+                        }
                         break;
 
                     case 0: outt = false; break;
