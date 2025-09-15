@@ -49,14 +49,27 @@ namespace ISIP523_Bashlykova
                 switch (choice)
                 {
                     case 1:
+                        Console.WriteLine();
                         for (int i = 0; i < kolvoop; i++)
                         {
-                            Console.WriteLine();
                             Console.WriteLine("Товар: " + pokypki[i] + ", цена: " + sums[i]);
                         }
                         break;
 
                     case 2:
+                        double srar = 0;
+                        int maxim = sums[0];
+                        int minim = sums[1];
+                        int summ = 0;
+                        Console.WriteLine();
+                        foreach (int i in sums)
+                        {
+                            summ += i;
+                            if (i >  maxim) maxim = i;
+                            if (i < minim) minim = i;
+                        }
+                        srar = (double)summ / kolvoop;
+                        Console.WriteLine("Среднее значение: " + srar + "\n" + "Максимальная сумма: " + maxim + "\n" + "Минимальная сумма: " + minim + "\n" + "Всего: " + summ + "\n");
                         break;
 
                     case 3:
@@ -70,7 +83,7 @@ namespace ISIP523_Bashlykova
 
                     case 0: outt = false; break;
 
-                    default: outt = false; break
+                    default: outt = false; break;
                 }
             }
 
