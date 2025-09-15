@@ -73,6 +73,19 @@ namespace ISIP523_Bashlykova
                         break;
 
                     case 3:
+                        for (int i = 0; i < sums.Length - 1; i++)
+                        {
+                            for (int j = sums.Length - 2; j >= i; j--)
+                            {
+                                if (sums[j] > sums[j + 1])
+                                {
+                                    int v = sums[j];
+                                    sums[j] = sums[j + 1];
+                                    sums[j + 1] = v;
+                                }
+                            }
+                        }
+                        Console.WriteLine("\nОтсортировано.");
                         break;
 
                     case 4:
