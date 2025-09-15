@@ -21,16 +21,21 @@ namespace ISIP523_Bashlykova
 
 
             Console.Write("Введите количество зафиксированных операций (2-40): ");
+            string request = "";
+            string[] words = new string[2];
             int kolvoop = Convert.ToInt32(Console.ReadLine());
             string[] pokypki = new string[kolvoop];
             double[] sums = new double[kolvoop];
             for (int i = 0; i < kolvoop; i++) 
             {
                 Console.WriteLine();
-                Console.WriteLine("Введите название купленного товара: ");
-                pokypki[i] = Console.ReadLine();
-                Console.WriteLine("Введите сумму покупки: ");
-                sums[i] = Convert.ToInt32(Console.ReadLine());
+                Console.WriteLine("Введите данные о покупке товара: ");
+                request = Console.ReadLine();
+                words = request.Split(new char[] { ';' },
+                StringSplitOptions.RemoveEmptyEntries);
+                words[1] = words[1].Trim();
+                pokypki[i] = words[0];
+                sums[i] = Convert.ToInt32(words[1]);
             }
 
             bool outt = true;
@@ -52,7 +57,7 @@ namespace ISIP523_Bashlykova
                         Console.WriteLine();
                         for (int i = 0; i < kolvoop; i++)
                         {
-                            Console.WriteLine("Товар: " + pokypki[i] + ", цена: " + sums[i]);
+                            Console.WriteLine("( " + pokypki[i] + "; " + sums[i] + " )");
                         }
                         break;
 
@@ -137,7 +142,7 @@ namespace ISIP523_Bashlykova
                         {
                             if (pokypki[i] == nazvtovar)
                             {
-                                Console.WriteLine("Товар: " + pokypki[i] + ", цена: " + sums[i]);
+                                Console.WriteLine("( " + pokypki[i] + "; " + sums[i] + " )");
                                 poisk = true;
                             }
                         }
