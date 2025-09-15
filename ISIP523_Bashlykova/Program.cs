@@ -22,8 +22,22 @@ namespace ISIP523_Bashlykova
 
             Console.Write("Введите количество зафиксированных операций (2-40): ");
             int kolvoop = Convert.ToInt32(Console.ReadLine());
+            string[] pokypki = new string[kolvoop];
+            int[] sums = new int[kolvoop];
+            for (int i = 0; i < kolvoop; i++) 
+            {
+                Console.WriteLine();
+                Console.WriteLine("Введите название купленного товара: ");
+                pokypki[i] = Console.ReadLine();
+                Console.WriteLine("Введите сумму покупки: ");
+                sums[i] = Convert.ToInt32(Console.ReadLine());
+                Console.WriteLine();
+            }
 
-
+            /*for (int i = 0; i < kolvoop; i++)
+            {
+                Console.WriteLine(pokypki[i]);
+            }*/
         }
     }
 }
