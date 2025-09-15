@@ -48,7 +48,29 @@ namespace ISIP523_Bashlykova
                 int choice = Convert.ToInt32(Console.ReadLine());
                 switch (choice)
                 {
+                    case 1:
+                        for (int i = 0; i < kolvoop; i++)
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("Товар: " + pokypki[i] + ", цена: " + sums[i]);
+                        }
+                        break;
+
+                    case 2:
+                        break;
+
+                    case 3:
+                        break;
+
+                    case 4:
+                        break;
+
+                    case 5:
+                        break;
+
                     case 0: outt = false; break;
+
+                    default: outt = false; break
                 }
             }
 
