@@ -89,8 +89,7 @@ namespace ISIP523_Bashlykova
                         break;
 
                     case 4:
-                        
-                    break;
+                        break;
 
                     case 5:
                         Console.WriteLine();
