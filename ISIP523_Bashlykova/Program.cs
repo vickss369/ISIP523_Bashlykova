@@ -120,9 +120,30 @@ namespace ISIP523_Bashlykova
                         break;
 
                     case 4:
+                        for (int i = 0; i < sklad.Count; i++)
+                        {
+                            if (sklad[i].IsOnSklad == "нет" || sklad[i].IsOnSklad == "Нет")
+                            {
+                                Console.Write("\nВведите количество товара '" + sklad[i].Name + "', который необходимо заказать: ");
+                                int newQuantity = Convert.ToInt32(Console.ReadLine());
+                                sklad[i].Quantity = newQuantity;
+                                Console.WriteLine("\nТовар успешно заказан.");
+                            }
+                        }
                         break;
 
                     case 5:
+                        Console.Write("");
+                        string nazvforsale = Console.ReadLine();
+                        for (int i = 0; i < sklad.Count; i++)
+                        {
+                            if (sklad[i].Name == nazvforsale)
+                            {
+                                Console.WriteLine();
+                                Console.WriteLine("\nТовар '" + sklad[i].Name + "' успешно продан.");
+                                sklad[i].Quantity--;
+                            }
+                        }
                         break;
 
                     case 6:
@@ -173,7 +194,7 @@ namespace ISIP523_Bashlykova
                                 break;
 
                             case 3:
-                                Console.Write("\nВведите название искомого товара: ");
+                                Console.Write("\nВведите категорию искомого товара: ");
                                 string categ = Console.ReadLine();
                                 bool poiskcateg = false;
                                 for (int i = 0; i < sklad.Count; i++)
