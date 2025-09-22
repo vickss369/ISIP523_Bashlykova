@@ -8,219 +8,324 @@ namespace ISIP523_Bashlykova
 {
     internal class Program
     {
-        /// Задание Учёт товаров в магазине
-        /// У товара должны быть следующее параметры:
-        /// * Уникальный код(начинается с "1", должен автоматически ставиться при пополнении списка товаров)
-        /// * Название
-        /// * Цена
-        /// * Количество
-        /// * Остался ли ещё товар на складе
-        /// * Категория(выбирается из имеющихся, задаются в коде, сделайте как минимум 3)
+        enum Category
+        {
+            Еда = 1,
+            Техника,
+            Канцелярия,
+            Одежда,
+            Химия
+        }
 
-        /// Мы можем работать с товаром через команды:
-        /// * Добавить товар
-        /// * Удалить товар
-        /// * Заказать поставку товара
-        /// * Продать товар
-        /// * Поиск товаров(по коду, названию и категории). Необходимо выводить полную информацию о товаре.
-        
         class Product
         {
             public int ProductID;
             public string Name;
             public double Price;
-            public int Quantity;
-            public string IsOnSklad;
-            public string Category;
+            public int Quantity
+            {
+                get => quantity;
+                set
+                {
+                    quantity = value < 0 ? 0 : value;
+                }
+            }
+            private int quantity;
 
-            public Product(int productID, string name, double price, int quantity, string isOnSklad, string category)
+            public bool IsOnSklad => Quantity > 0;
+            public Category Category;
+
+            public Product(int productID, string name, double price, int quantity, Category category)
             {
                 ProductID = productID;
                 Name = name;
                 Price = price;
                 Quantity = quantity;
-                IsOnSklad = isOnSklad;
                 Category = category;
             }
 
             public void PrintInfo()
             {
-                Console.WriteLine("Информация о товаре\n" + "Номер: " + this.ProductID + "\n" + "Название: " + this.Name + "\n" + "Цена: " + this.Price + "\n" + "Количество: " + this.Quantity + "\n" + "Есть ли на складе: " + this.IsOnSklad + "\n" + "Категория: " + this.Category + "\n");
+                Console.WriteLine("\nИнформация о товаре:");
+                Console.WriteLine($"ID: {ProductID}");
+                Console.WriteLine($"Название: {Name}");
+                Console.WriteLine($"Цена: {Price:F2}");
+                Console.WriteLine($"Количество: {Quantity}");
+                Console.WriteLine($"В наличии на складе: {(IsOnSklad ? "Да" : "Нет")}");
+                Console.WriteLine($"Категория: {Category}");
+                Console.WriteLine(new string('-', 30));
             }
         }
 
-        static void Main(string[] args)
+        class Inventory
         {
-            List<Product> sklad = new List<Product>();
-            bool outt = true;
-            while (outt)
-            {
-                Console.WriteLine("\nМЕНЮ");
-                Console.WriteLine("1. Добавление товара");
-                Console.WriteLine("2. Удаление товара");
-                Console.WriteLine("3. Вывод списка товаров");
-                Console.WriteLine("4. Заказать товар");
-                Console.WriteLine("5. Продать товар");
-                Console.WriteLine("6. Поиск товаров(по коду, названию и категории)");
-                Console.WriteLine("0. Выход");
+            private List<Product> products = new List<Product>();
+            private int nextProductID = 1;
 
-                Console.Write("Введите выбор: ");
-                int choice = Convert.ToInt32(Console.ReadLine());
+            public void AddProduct()
+            {
+                Console.WriteLine("Добавление нового товара");
+
+                Console.Write("Введите название: ");
+                string name = Console.ReadLine();
+
+                double price;
+                while (true)
+                {
+                    Console.Write("Введите цену: ");
+                    if (double.TryParse(Console.ReadLine(), out price) && price >= 0) break;
+                    Console.WriteLine("Ошибка: введите корректное число для цены.");
+                }
+
+                int quantity;
+                while (true)
+                {
+                    Console.Write("Введите количество: ");
+                    if (int.TryParse(Console.ReadLine(), out quantity) && quantity >= 0) break;
+                    Console.WriteLine("Ошибка: введите корректное неотрицательное целое число для количества.");
+                }
+
+                Console.WriteLine("Выберите категорию (введите цифру):");
+                foreach (var catValue in Enum.GetValues(typeof(Category)))
+                {
+                    Console.WriteLine($"{(int)catValue}. {catValue}");
+                }
+
+                Category category;
+                while (true)
+                {
+                    Console.Write("Категория: ");
+                    if (Enum.TryParse<Category>(Console.ReadLine(), out category) && Enum.IsDefined(typeof(Category), category))
+                        break;
+                    Console.WriteLine("Ошибка: выберите категорию из списка.");
+                }
+
+                var newProduct = new Product(nextProductID++, name, price, quantity, category);
+                products.Add(newProduct);
+                Console.WriteLine("\nТовар успешно добавлен");
+            }
+
+            public void RemoveProduct()
+            {
+                if (products.Count == 0)
+                {
+                    Console.WriteLine("Склад пуст.");
+                    return;
+                }
+
+                Console.Write("Введите ID товара для удаления: ");
+                if (int.TryParse(Console.ReadLine(), out int id))
+                {
+                    var prod = products.Find(p => p.ProductID == id);
+                    if (prod != null)
+                    {
+                        products.Remove(prod);
+                        Console.WriteLine($"Товар с ID {id} удалён.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Товар с таким ID не найден.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Ошибка: введён неверный ID.");
+                }
+            }
+
+            public void ListProducts()
+            {
+                if (products.Count == 0)
+                {
+                    Console.WriteLine("Склад пуст.");
+                    return;
+                }
+
+                Console.WriteLine("Список товаров:");
+                foreach (var p in products)
+                    p.PrintInfo();
+            }
+
+            public void OrderProduct()
+            {
+                if (products.Count == 0)
+                {
+                    Console.WriteLine("Склад пуст.");
+                    return;
+                }
+
+                Console.Write("\nВведите ID товара для заказа поставки: ");
+                if (!int.TryParse(Console.ReadLine(), out int id))
+                {
+                    Console.WriteLine("Ошибка: неверный ID.");
+                    return;
+                }
+
+                var product = products.Find(p => p.ProductID == id);
+                if (product == null)
+                {
+                    Console.WriteLine("Товар не найден.");
+                    return;
+                }
+
+                Console.Write($"Введите количество для заказа у товара '{product.Name}': ");
+                if (!int.TryParse(Console.ReadLine(), out int orderQuantity) || orderQuantity <= 0)
+                {
+                    Console.WriteLine("Ошибка: нужно ввести положительное число.");
+                    return;
+                }
+
+                product.Quantity += orderQuantity;
+                Console.WriteLine($"Заказ поставки выполнен. \nНовое количество товара '{product.Name}': {product.Quantity}");
+            }
+
+            public void SellProduct()
+            {
+                if (products.Count == 0)
+                {
+                    Console.WriteLine("Склад пуст.");
+                    return;
+                }
+
+                Console.Write("Введите название товара для продажи: ");
+                string name = Console.ReadLine();
+
+                var product = products.Find(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                if (product == null)
+                {
+                    Console.WriteLine("Товар не найден.");
+                    return;
+                }
+
+                if (product.Quantity == 0)
+                {
+                    Console.WriteLine($"Товар '{product.Name}' отсутствует на складе.");
+                    return;
+                }
+
+                product.Quantity--;
+                Console.WriteLine($"Товар '{product.Name}' успешно продан. \nОсталось на складе: {product.Quantity}");
+            }
+
+            public void SearchProducts()
+            {
+                if (products.Count == 0)
+                {
+                    Console.WriteLine("Склад пуст.");
+                    return;
+                }
+
+                Console.WriteLine("Поиск товаров по параметру:");
+                Console.WriteLine("1. ID");
+                Console.WriteLine("2. Название");
+                Console.WriteLine("3. Категория");
+                Console.Write("Выберите параметр: ");
+                if (!int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    Console.WriteLine("Ошибка: неверный ввод.");
+                    return;
+                }
+
                 switch (choice)
                 {
                     case 1:
-                        Console.WriteLine("\nВведите информацию о товаре для добавления: \n");
-                        int addproductID = Convert.ToInt32(Console.ReadLine());
-                        string addname = Console.ReadLine();
-                        double addprice = Convert.ToDouble(Console.ReadLine());
-                        int addquantity = Convert.ToInt32(Console.ReadLine());
-                        string addonsklad = Console.ReadLine();
-                        string addcat = Console.ReadLine();
-
-                        Product productadd = new Product(addproductID, addname, addprice, addquantity, addonsklad, addcat);
-                        sklad.Add(productadd);
-                        Console.WriteLine("\nТовар успешно добавлен.");
+                        Console.Write("\nВведите ID товара: ");
+                        if (int.TryParse(Console.ReadLine(), out int id))
+                        {
+                            var prod = products.Find(p => p.ProductID == id);
+                            if (prod != null)
+                                prod.PrintInfo();
+                            else
+                                Console.WriteLine("\nТовар не найден.");
+                        }
+                        else Console.WriteLine("\nОшибка: неверный ID.");
                         break;
 
                     case 2:
-                        if (sklad.Count == 0)
-                        {
-                            Console.WriteLine("\nСклад товаров пуст.");
-                            break;
-                        }
-
-                        Console.Write("\nВведите ProductID товара для удаления: ");
-                        int removeID = Convert.ToInt32(Console.ReadLine());
-
-                        Product productToRemove = sklad.Find(p => p.ProductID == removeID);
-                        if (productToRemove != null)
-                        {
-                            sklad.Remove(productToRemove);
-                            Console.WriteLine("\nТовар удалён.");
-                        }
+                        Console.Write("\nВведите название товара: ");
+                        string name = Console.ReadLine();
+                        var foundByName = products.FindAll(p => p.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0);
+                        if (foundByName.Count == 0)
+                            Console.WriteLine("\nТовары с таким названием не найдены.");
                         else
-                        {
-                            Console.WriteLine("\nТовар с таким ProductID не найден.");
-                        }
+                            foundByName.ForEach(p => p.PrintInfo());
                         break;
 
                     case 3:
-                        if (sklad.Count == 0)
+                        Console.WriteLine("\nВыберите категорию:");
+                        foreach (var catValue in Enum.GetValues(typeof(Category)))
                         {
-                            Console.WriteLine("\nСписок товаров пуст.");
+                            Console.WriteLine($"{(int)catValue}. {catValue}");
+                        }
+                        Console.Write("Категория: ");
+                        if (Enum.TryParse<Category>(Console.ReadLine(), out Category cat) && Enum.IsDefined(typeof(Category), cat))
+                        {
+                            var foundByCategory = products.FindAll(p => p.Category == cat);
+                            if (foundByCategory.Count == 0)
+                                Console.WriteLine("\nТовары в данной категории не найдены.");
+                            else
+                                foundByCategory.ForEach(p => p.PrintInfo());
                         }
                         else
                         {
-                            Console.WriteLine("\nСПИСОК ТОВАРОВ\n");
-                            foreach (var prd in sklad)
-                            {
-                                prd.PrintInfo();
-                            }
+                            Console.WriteLine("\nНеверная категория.");
                         }
                         break;
 
-                    case 4:
-                        for (int i = 0; i < sklad.Count; i++)
-                        {
-                            if (sklad[i].IsOnSklad == "нет" || sklad[i].IsOnSklad == "Нет")
-                            {
-                                Console.Write("\nВведите количество товара '" + sklad[i].Name + "', который необходимо заказать: ");
-                                int newQuantity = Convert.ToInt32(Console.ReadLine());
-                                sklad[i].Quantity = newQuantity;
-                                Console.WriteLine("\nТовар успешно заказан.");
-                            }
-                        }
+                    default:
+                        Console.WriteLine("Неверный выбор параметра.");
                         break;
+                }
+            }
+        }
+            static void Main()
+            {
+                Inventory sklad = new Inventory();
+                bool running = true;
 
-                    case 5:
-                        Console.Write("");
-                        string nazvforsale = Console.ReadLine();
-                        for (int i = 0; i < sklad.Count; i++)
-                        {
-                            if (sklad[i].Name == nazvforsale)
-                            {
-                                Console.WriteLine();
-                                Console.WriteLine("\nТовар '" + sklad[i].Name + "' успешно продан.");
-                                sklad[i].Quantity--;
-                            }
-                        }
-                        break;
+                while (running)
+                {
+                    Console.WriteLine("\n=== МЕНЮ ===");
+                    Console.WriteLine("1. Добавить товар");
+                    Console.WriteLine("2. Удалить товар");
+                    Console.WriteLine("3. Вывести список товаров");
+                    Console.WriteLine("4. Заказать поставку товара");
+                    Console.WriteLine("5. Продать товар");
+                    Console.WriteLine("6. Поиск товаров");
+                    Console.WriteLine("0. Выход");
+                    Console.Write("Введите выбор: ");
 
-                    case 6:
-                        Console.WriteLine("\nМЕНЮ ПАРАМЕТРОВ ТОВАРА");
-                        Console.WriteLine("1. ID");
-                        Console.WriteLine("2. Название");
-                        Console.WriteLine("3. Категория");
-                        Console.Write("Введите выбор: ");
-                        int choiseval = Convert.ToInt32(Console.ReadLine());
-                        switch (choiseval)
-                        {
-                            case 1:
-                                Console.Write("\nВведите ProductID искомого товара: ");
-                                int poiskID = Convert.ToInt32(Console.ReadLine());
-                                bool poiskid = false;
-                                for (int i = 0; i < sklad.Count; i++)
-                                {
-                                    if (sklad[i].ProductID == poiskID)
-                                    {
-                                        Console.WriteLine();
-                                        sklad[i].PrintInfo();
-                                        poiskid = true;
-                                    }
-                                }
-                                if (!poiskid)
-                                {
-                                    Console.WriteLine("Товар с ID " + poiskID + " не найден.");
-                                }
-                                break;
+                    string input = Console.ReadLine();
+                    Console.WriteLine();
 
-                            case 2:
-                                Console.Write("\nВведите название искомого товара: ");
-                                string nazvtovar = Console.ReadLine();
-                                bool poisknazv = false;
-                                for (int i = 0; i < sklad.Count; i++)
-                                {
-                                    if (sklad[i].Name == nazvtovar)
-                                    {
-                                        Console.WriteLine();
-                                        sklad[i].PrintInfo();
-                                        poisknazv = true;
-                                    }
-                                }
-                                if (!poisknazv)
-                                {
-                                    Console.WriteLine("Товар " + nazvtovar + " не найден.");
-                                }
-                                break;
-
-                            case 3:
-                                Console.Write("\nВведите категорию искомого товара: ");
-                                string categ = Console.ReadLine();
-                                bool poiskcateg = false;
-                                for (int i = 0; i < sklad.Count; i++)
-                                {
-                                    if (sklad[i].Category == categ)
-                                    {
-                                        Console.WriteLine();
-                                        sklad[i].PrintInfo();
-                                        poiskcateg = true;
-                                    }
-                                }
-                                if (!poiskcateg)
-                                {
-                                    Console.WriteLine("Категория товара " + categ + " не найденa.");
-                                }
-                                break;
-
-                            default: break;
-                        }
-                        break;
-
-                    case 0: outt = false; break;
-
-                    default: outt = false; break;
+                    switch (input)
+                    {
+                        case "1":
+                            sklad.AddProduct();
+                            break;
+                        case "2":
+                            sklad.RemoveProduct();
+                            break;
+                        case "3":
+                            sklad.ListProducts();
+                            break;
+                        case "4":
+                            sklad.OrderProduct();
+                            break;
+                        case "5":
+                            sklad.SellProduct();
+                            break;
+                        case "6":
+                            sklad.SearchProducts();
+                            break;
+                        case "0":
+                            running = false;
+                            break;
+                        default:
+                            Console.WriteLine("Некорректный выбор, попробуйте ещё раз.");
+                            break;
+                    }
                 }
             }
         }
     }
-}
