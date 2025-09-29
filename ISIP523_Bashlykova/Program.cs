@@ -33,6 +33,24 @@ namespace ISIP523_Bashlykova
             public int SentencesCount;
             public Dictionary<char, int> LetterChastota;
         }
+        private static List<TextStatistics> statisticsHistory = new List<TextStatistics>();
+        private static TextStatistics currentStats = 0;
+
+        static void vvodText()
+        {
+            Console.WriteLine("\nВведите текст (минимум 100 символов):");
+            string txt = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(txt) || inptxtut.Length < 100)
+            {
+                Console.WriteLine("Ошибка: текст слишком короткий!");
+                return;
+            }
+
+            var stats = AnalyzeText(txt);
+            currentStats = stats;
+            statisticsHistory.Add(stats);
+        }
 
         static void Main(string[] args)
         {
@@ -50,6 +68,7 @@ namespace ISIP523_Bashlykova
                 switch (choise)
                 {
                     case 1:
+                        vvodText();
                         break;
 
                     case 2:
