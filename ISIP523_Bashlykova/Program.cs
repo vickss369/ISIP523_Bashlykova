@@ -31,7 +31,7 @@ namespace ISIP523_Bashlykova
             public int SoglCount;
             public int GlasCount;
             public int SentencesCount;
-            public Dictionary<char, int> LetterChastot;
+            public Dictionary<char, int> LetterChastota;
         }
 
         static void Main(string[] args)
