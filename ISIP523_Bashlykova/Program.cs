@@ -25,6 +25,75 @@ namespace ISIP523_Bashlykova
         /// * Вывести самую дорогую и самую дешёвую книгу. 
         /// * Сгруппировать книги по авторам и вывести количество книг каждого автора.
 
+
+        enum JanrKnigi
+        {
+            Фэнтези = 1,
+            Детектив,
+            Роман,
+            НаучнаяФантастика,
+            Приключения
+        }
+
+        class Kniga
+        {
+            private static int nextId = 1;
+            private int id;
+            private string nazv;
+            private string avtor;
+            private JanrKnigi janr;
+            private int godizd;
+            private double cena;
+
+            public string Name() { return nazv; }
+            public string Autor() { return avtor; }
+            public JanrKnigi Janr() { return janr; }
+            public int Year() { return godizd; }
+            public double Cena() { return cena; }
+            public int Id() { return id; }
+
+            public void VvodInfo()
+            {
+                Console.Write("Введите название книги: ");
+                nazv = Console.ReadLine();
+
+                Console.Write("Введите автора книги: ");
+                avtor = Console.ReadLine();
+
+                Console.WriteLine("Выберите жанр (введите номер): ");
+                foreach (var j in Enum.GetValues(typeof(JanrKnigi)))
+                {
+                    Console.WriteLine($"{(int)j}. {j}");
+                }
+
+                int n;
+                while (!int.TryParse(Console.ReadLine(), out n) || !Enum.IsDefined(typeof(JanrKnigi), n))
+                {
+                    Console.Write("Ошибка! Введите корректный номер жанра: ");
+                }
+                janr = (JanrKnigi)n;
+
+                Console.Write("Введите год издания книги: ");
+                while (!int.TryParse(Console.ReadLine(), out godizd))
+                {
+                    Console.Write("Ошибка! Введите корректный год: ");
+                }
+
+                Console.Write("Введите цену книги: ");
+                while (!double.TryParse(Console.ReadLine(), out cena) || cena < 0)
+                {
+                    Console.Write("Ошибка! Введите корректную цену: ");
+                }
+
+                id = nextId++;
+            }
+
+            public void VyvodInfo()
+            {
+                Console.WriteLine($"ID: {id}\nНазвание: '{nazv}'\nАвтор: {avtor}\nЖанр: {janr}\nГод: {godizd}\nЦена: {cena} руб.\n");
+            }
+        }
+
         static void Main(string[] args)
         {
             bool outt = true;
