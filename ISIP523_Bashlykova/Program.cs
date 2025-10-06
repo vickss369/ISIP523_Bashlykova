@@ -202,6 +202,37 @@ namespace ISIP523_Bashlykova
             sorted.ForEach(k => k.VyvodInfo());
         }
 
+        static void CenaMaxMin()
+        {
+            if (knigi.Count == 0)
+            {
+                Console.WriteLine("\nБиблиотека пуста.");
+                return;
+            }
+
+            var max = knigi.OrderByDescending(k => k.Cena()).First();
+            var min = knigi.OrderBy(k => k.Cena()).First();
+
+            Console.WriteLine("Самая дорогая книга:");
+            max.VyvodInfo();
+            Console.WriteLine("Самая дешёвая книга:");
+            min.VyvodInfo();
+        }
+
+        static void GruppirovkaAvtor()
+        {
+            if (knigi.Count == 0)
+            {
+                Console.WriteLine("\nБиблиотека пуста.");
+                return;
+            }
+
+            var grupp = knigi.GroupBy(k => k.Autor());
+            foreach (var g in grupp)
+                Console.WriteLine($"Автор: {g.Key}, количество книг: {g.Count()}");
+        }
+
+
         static void Main(string[] args)
         {
             bool outt = true;
@@ -286,12 +317,12 @@ namespace ISIP523_Bashlykova
 
                     case 6:
                         Console.WriteLine();
-                        //CenaMaxMin();
+                        CenaMaxMin();
                         break;
 
                     case 7:
                         Console.WriteLine();
-                        //GruppirovkaAvtor();
+                        GruppirovkaAvtor();
                         break;
 
                     case 0: outt = false; break;
