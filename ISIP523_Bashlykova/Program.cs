@@ -94,6 +94,49 @@ namespace ISIP523_Bashlykova
             }
         }
 
+        static List<Kniga> knigi = new List<Kniga>();
+        static void DobavitKnigu()
+        {
+            Kniga mykniga = new Kniga();
+            mykniga.VvodInfo();
+            knigi.Add(mykniga);
+            Console.WriteLine("\nКнига успешно добавлена!");
+        }
+
+        static void UdalitKnigu()
+        {
+            Console.Write("\nВведите ID книги для удаления: ");
+            if (int.TryParse(Console.ReadLine(), out int id))
+            {
+                var kn = knigi.FirstOrDefault(k => k.Id() == id);
+                if (kn != null)
+                {
+                    knigi.Remove(kn);
+                    Console.WriteLine($"\nКнига с ID {id} удалена из библиотеки.");
+                }
+                else
+                {
+                    Console.WriteLine($"\nКнига с ID {id} не найдена.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("\nОшибка ввода ID.");
+            }
+        }
+
+        static void VyvestiBiblioteku()
+        {
+            if (knigi.Count == 0)
+            {
+                Console.WriteLine("\nБиблиотека пуста.");
+                return;
+            }
+            Console.WriteLine("\nВСЕ КНИГИ В БИБЛИОТЕКЕ\n");
+            foreach (var k in knigi)
+                k.VyvodInfo();
+        }
+
         static void Main(string[] args)
         {
             bool outt = true;
@@ -116,17 +159,17 @@ namespace ISIP523_Bashlykova
                 {
                     case 1:
                         Console.WriteLine();
-                        //DobavitKnigu();
+                        DobavitKnigu();
                         break;
 
                     case 2:
                         Console.WriteLine();
-                        //UdalitKnigu();
+                        UdalitKnigu();
                         break;
 
                     case 3:
                         Console.WriteLine();
-                        //VyvestiBiblioteku();
+                        VyvestiBiblioteku();
                         break;
 
                     case 4:
