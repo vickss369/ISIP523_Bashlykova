@@ -176,6 +176,32 @@ namespace ISIP523_Bashlykova
                 res.ForEach(k => k.VyvodInfo());
         }
 
+        static void SortNazvanie()
+        {
+            if (knigi.Count == 0)
+            {
+                Console.WriteLine("\nБиблиотека пуста.");
+                return;
+            }
+
+            Console.WriteLine("\nКниги, отсортированные по названию\n");
+            var sorted = knigi.OrderBy(k => k.Name()).ToList();
+            sorted.ForEach(k => k.VyvodInfo());
+        }
+
+        static void SortGod()
+        {
+            if (knigi.Count == 0)
+            {
+                Console.WriteLine("\nБиблиотека пуста.");
+                return;
+            }
+
+            Console.WriteLine("\nКниги, отсортированные по году издания\n");
+            var sorted = knigi.OrderBy(k => k.Year()).ToList();
+            sorted.ForEach(k => k.VyvodInfo());
+        }
+
         static void Main(string[] args)
         {
             bool outt = true;
@@ -247,11 +273,11 @@ namespace ISIP523_Bashlykova
                         switch (choicesort)
                         {
                             case 1:
-                                //SortNazvanie();
+                                SortNazvanie();
                                 break;
 
                             case 2:
-                                //SortGod();
+                                SortGod();
                                 break;
 
                             default: break;
