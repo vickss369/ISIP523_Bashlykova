@@ -137,6 +137,45 @@ namespace ISIP523_Bashlykova
                 k.VyvodInfo();
         }
 
+        static void PoiskAvtor()
+        {
+            Console.Write("\nВведите автора книги: ");
+            string avtr = Console.ReadLine();
+            var res = knigi.Where(k => k.Autor().Equals(avtr, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (res.Count == 0)
+                Console.WriteLine($"\nКниги автора '{avtr}' не найдены.");
+            else
+                res.ForEach(k => k.VyvodInfo());
+        }
+
+        static void PoiskNazvanie()
+        {
+            Console.Write("\nВведите название книги: ");
+            string nazv = Console.ReadLine();
+            var res = knigi.Where(k => k.Name().Equals(nazv, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (res.Count == 0)
+                Console.WriteLine($"\nКниги с названием '{nazv}' не найдены.");
+            else
+                res.ForEach(k => k.VyvodInfo());
+        }
+
+        static void PoiskJanr()
+        {
+            Console.Write("\nВведите жанр книги (например: Фэнтези, Детектив, Роман, НаучнаяФантастика, Приключения): ");
+            string janrStr = Console.ReadLine();
+            if (!Enum.TryParse(janrStr, true, out JanrKnigi janr) || !Enum.IsDefined(typeof(JanrKnigi), janr))
+            {
+                Console.WriteLine("\nТакого жанра не существует.");
+                return;
+            }
+
+            var res = knigi.Where(k => k.Janr() == janr).ToList();
+            if (res.Count == 0)
+                Console.WriteLine($"\nКниги жанра '{janr}' не найдены.");
+            else
+                res.ForEach(k => k.VyvodInfo());
+        }
+
         static void Main(string[] args)
         {
             bool outt = true;
@@ -183,15 +222,15 @@ namespace ISIP523_Bashlykova
                         switch (choicepoisk)
                         {
                             case 1:
-                                //PoiskAvtor();
+                                PoiskAvtor();
                                 break;
 
                             case 2:
-                                //PoiskNazvanie();
+                                PoiskNazvanie();
                                 break;
 
                             case 3:
-                                //PoiskJanr();
+                                PoiskJanr();
                                 break;
 
                             default: break;
