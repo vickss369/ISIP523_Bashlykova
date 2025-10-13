@@ -23,6 +23,92 @@ namespace ISIP523_Bashlykova
 {
     internal class Program
     {
+        class Person
+        {
+            private string name;
+            private string surname;
+            private int age;
+            private string email;
+
+            public Person(string name, string surname, int age, string email)
+            {
+                this.name = name;
+                this.surname = surname;
+                this.age = age;
+                this.email = email;
+            }
+
+            public virtual void printInfo()
+            {
+                Console.WriteLine($"Имя: {name}\nФамилия: {surname}\nВозраст: {age}\nКорпоративная почта: {email}");
+            }
+        }
+
+        class Student : Person
+        {
+            private string group;
+            private string course;
+
+            public Student(string name, string surname, int age, string email, string group, string course)
+                : base(name, surname, age, email)
+            {
+                this.group = group;
+                this.course = course;
+
+            }
+
+            public override void printInfo()
+            {
+                //Console.WriteLine("ИНФОРМАЦИЯ О С");
+                base.printInfo();
+                Console.WriteLine($"Номер группы: {group}\nКурс: {course}");
+            }
+        }
+
+        class Teacher : Person
+        {
+            private string salary;
+            private string course;
+            private int experience;
+
+            public Teacher(string name, string surname, int age, string email, string salary, string course, int experience)
+                : base(name, surname, age, email)
+            {
+                this.salary = salary;
+                this.course = course;
+                this.experience = experience;
+            }
+
+            public override void printInfo()
+            {
+                //Console.WriteLine("ИНФОРМАЦИЯ О С");
+                base.printInfo();
+                Console.WriteLine($"Зарплата: {salary}\nКурс: {course}\nСтаж работы: {experience}");
+            }
+        }
+
+        class Course
+        {
+            private string title;
+            private Teacher teacher;
+            private string duration;
+            private List<Student> Students = new List<Student>();
+
+            public void AddStudent(Student student)
+            {
+                if (!Students.Contains(student))
+                {
+                    Students.Add(student);
+                }
+            }
+
+            private void Print()
+            {
+                Console.WriteLine($"Название: {title}\nУчитель: {teacher}\nДлительность: {duration}");
+            }
+        }
+
+
         static void Main(string[] args)
         {
             bool outt = true;
