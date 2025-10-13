@@ -47,35 +47,32 @@ namespace ISIP523_Bashlykova
         class Student : Person
         {
             private string group;
-            private string course;
+            private int godobych;
 
-            public Student(string name, string surname, int age, string email, string group, string course)
+            public Student(string name, string surname, int age, string email, string group, int godobych)
                 : base(name, surname, age, email)
             {
                 this.group = group;
-                this.course = course;
-
+                this.godobych = godobych;
             }
 
             public override void printInfo()
             {
                 //Console.WriteLine("ИНФОРМАЦИЯ О С");
                 base.printInfo();
-                Console.WriteLine($"Номер группы: {group}\nКурс: {course}");
+                Console.WriteLine($"Номер группы: {group}\nКурс: {godobych}");
             }
         }
 
         class Teacher : Person
         {
             private string salary;
-            private string course;
             private int experience;
 
-            public Teacher(string name, string surname, int age, string email, string salary, string course, int experience)
+            public Teacher(string name, string surname, int age, string email, string salary, int experience)
                 : base(name, surname, age, email)
             {
                 this.salary = salary;
-                this.course = course;
                 this.experience = experience;
             }
 
@@ -83,7 +80,7 @@ namespace ISIP523_Bashlykova
             {
                 //Console.WriteLine("ИНФОРМАЦИЯ О С");
                 base.printInfo();
-                Console.WriteLine($"Зарплата: {salary}\nКурс: {course}\nСтаж работы: {experience}");
+                Console.WriteLine($"Зарплата: {salary}\nСтаж работы: {experience}");
             }
         }
 
@@ -106,6 +103,43 @@ namespace ISIP523_Bashlykova
             {
                 Console.WriteLine($"Название: {title}\nУчитель: {teacher}\nДлительность: {duration}");
             }
+        }
+
+        static List<Student> allStud = new List<Student>();
+        static void addStudent()
+        {
+            Console.WriteLine("Введите имя: ");
+            string name = Console.ReadLine();
+            Console.WriteLine("Введите фамилию: ");
+            string surname = Console.ReadLine();
+            Console.WriteLine("Введите корпоративную почту: ");
+            string email = Console.ReadLine();
+            Console.WriteLine("Введите возраст: ");
+            int age = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Введите группу: ");
+            string group = Console.ReadLine();
+            Console.WriteLine("Введите год обучения: ");
+            int year = Convert.ToInt32(Console.ReadLine());
+            allStud.Add(new Student(name, surname, age, email, group, year));
+        }
+
+        static List<Teacher> allTeach = new List<Teacher>();
+        static void addTeacher()
+        {
+            Console.WriteLine("Введите имя: ");
+            string name = Console.ReadLine();
+            Console.WriteLine("Введите фамилию: ");
+            string surname = Console.ReadLine();
+            Console.WriteLine("Введите возраст: ");
+            int age = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Введите корпоративную почту: ");
+            string email = Console.ReadLine();
+            Console.WriteLine("Введите зарплатy: ");
+            string salary = Console.ReadLine();
+            Console.WriteLine("Введите стаж работы: ");
+            int experience = Convert.ToInt32(Console.ReadLine());
+            allTeach.Add(new Teacher(name, surname, age, email, salary, experience));
+
         }
 
 
@@ -132,10 +166,12 @@ namespace ISIP523_Bashlykova
                 {
                     case 1:
                         Console.WriteLine();
+                        addStudent();
                         break;
 
                     case 2:
                         Console.WriteLine();
+                        addTeacher();
                         break;
 
                     case 3:
