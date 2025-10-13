@@ -50,7 +50,7 @@ namespace ISIP523_Bashlykova
 
             public virtual void vyvodInfo()
             {
-                Console.WriteLine($"Имя: {name}\nФамилия: {surname}\nВозраст: {age}\nКорпоративная почта: {email}");
+                Console.WriteLine($"\nИмя: {name}\nФамилия: {surname}\nВозраст: {age}\nКорпоративная почта: {email}");
             }
         }
 
@@ -94,10 +94,12 @@ namespace ISIP523_Bashlykova
 
         class Course
         {
-            private string title;
+            public string title;
             private Teacher teacher;
             private string duration;
             private List<Student> Students = new List<Student>();
+
+            public object Title { get; internal set; }
 
             public Course(string title, string duration)
             {
@@ -118,9 +120,27 @@ namespace ISIP523_Bashlykova
                 }
             }
 
-            private void Print()
+            public bool IsStudent(Student s)
             {
-                Console.WriteLine($"Название: {title}\nУчитель: {teacher}\nДлительность: {duration}");
+                return Students.Contains(s);
+            }
+
+            public void PrintStudents()
+            {
+                if (Students.Count == 0)
+                {
+                    Console.WriteLine("На этом курсе пока нет студентов.");
+                    return;
+                }
+
+                foreach (var s in Students)
+                    Console.WriteLine("- " + s.GetFullName());
+            }
+
+            public void vyvodInfo()
+            {
+                string teacherName = teacher != null ? teacher.GetFullName() : "Преподаватель не назначен";
+                Console.WriteLine($"Название: {title}\nУчитель: {teacherName}\nДлительность: {duration}");
             }
         }
 
@@ -231,11 +251,11 @@ namespace ISIP523_Bashlykova
                     if (foundStudent != null)
                     {
                         newCourse.AddStudent(foundStudent);
-                        Console.WriteLine($" Студент {foundStudent.GetFullName()} добавлен на курс.");
+                        Console.WriteLine($"Студент {foundStudent.GetFullName()} добавлен на курс.");
                     }
                     else
                     {
-                        Console.WriteLine(" Студент с такой фамилией не найден.");
+                        Console.WriteLine("Студент с такой фамилией не найден.");
                     }
                 }
             }
@@ -244,7 +264,103 @@ namespace ISIP523_Bashlykova
             Console.WriteLine("\n Курс добавлен!");
         }
 
-            static void Main(string[] args)
+        static void AddStudentToCourse()
+        {
+            if (AllCourses.Count == 0 || allStud.Count == 0)
+            {
+                Console.WriteLine(" Нет доступных курсов или студентов.");
+                return;
+            }
+
+            Console.WriteLine("\nСписок курсов:");
+            for (int i = 0; i < AllCourses.Count; i++)
+                Console.WriteLine($"{i + 1}. {AllCourses[i].title}");
+
+            Console.Write("Выберите номер курса: ");
+            int courseIndex = Convert.ToInt32(Console.ReadLine()) - 1;
+            if (courseIndex < 0 || courseIndex >= AllCourses.Count)
+            {
+                Console.WriteLine("Неверный выбор курса.");
+                return;
+            }
+
+            Console.WriteLine("\nСписок студентов:");
+            for (int i = 0; i < allStud.Count; i++)
+                Console.WriteLine($"{i + 1}. {allStud[i].GetFullName()}");
+
+            Console.Write("Выберите номер студента: ");
+            int studentIndex = Convert.ToInt32(Console.ReadLine()) - 1;
+            if (studentIndex < 0 || studentIndex >= allStud.Count)
+            {
+                Console.WriteLine("Неверный выбор студента.");
+                return;
+            }
+
+            AllCourses[courseIndex].AddStudent(allStud[studentIndex]);
+        }
+
+        static void ShowStudentCourses()
+        {
+            if (allStud.Count == 0)
+            {
+                Console.WriteLine("Нет студентов в системе.");
+                return;
+            }
+
+            Console.Write("Введите фамилию студента: ");
+            string surname = Console.ReadLine();
+
+            Student foundStudent = allStud.Find(s => s.GetSurname().Equals(surname, StringComparison.OrdinalIgnoreCase));
+            if (foundStudent == null)
+            {
+                Console.WriteLine("Студент с такой фамилией не найден.");
+                return;
+            }
+
+            Console.WriteLine($"\nКурсы студента {foundStudent.GetFullName()}:");
+
+            bool found = false;
+
+            foreach (var course in AllCourses)
+            {
+                if (course.IsStudent(foundStudent))
+                {
+                    course.vyvodInfo();
+                    found = true;
+                }
+            }
+
+            if (!found)
+                Console.WriteLine("Студент пока не записан ни на один курс.");
+        }
+
+        static void ShowCourseStudents()
+        {
+            if (AllCourses.Count == 0)
+            {
+                Console.WriteLine("Нет курсов в системе.");
+                return;
+            }
+
+            Console.Write("Введите название курса: ");
+            string title = Console.ReadLine();
+
+            Course foundCourse = AllCourses.Find(c => string.Equals((string)c.title, title, StringComparison.OrdinalIgnoreCase));
+
+
+
+            if (foundCourse == null)
+            {
+                Console.WriteLine("Курс с таким названием не найден.");
+                return;
+            }
+
+            Console.WriteLine($"\nСписок студентов на курсе:");
+
+            foundCourse.PrintStudents();
+        }
+
+        static void Main(string[] args)
             {
             bool outt = true;
             while (outt)
@@ -255,9 +371,8 @@ namespace ISIP523_Bashlykova
                 Console.WriteLine("3. Создать курс");
                 Console.WriteLine("4. Вывод списков");
                 Console.WriteLine("5. Записать студента на курс");
-                Console.WriteLine("6. Назначить преподавателя на курс");
-                Console.WriteLine("7. Список курсов студента");
-                Console.WriteLine("8. Список студентов на курсе");
+                Console.WriteLine("6. Список курсов студента");
+                Console.WriteLine("7. Список студентов на курсе");
                 Console.WriteLine("0. Выход");
 
                 Console.Write("\nВыберите действие: ");
@@ -287,8 +402,8 @@ namespace ISIP523_Bashlykova
                         Console.WriteLine("3. Список курсов");
 
                         Console.Write("\nВыберите действие: ");
-                        int choicepoisk = Convert.ToInt32(Console.ReadLine());
-                        switch (choicepoisk)
+                        int choicespis = Convert.ToInt32(Console.ReadLine());
+                        switch (choicespis)
                         {
                             case 1:
                                 Console.WriteLine("\nСТУДЕНТЫ\n");
@@ -308,6 +423,10 @@ namespace ISIP523_Bashlykova
 
                             case 3:
                                 Console.WriteLine("\nКУРСЫ\n");
+                                foreach (var kyrs in AllCourses)
+                                {
+                                    kyrs.vyvodInfo();
+                                }
                                 break;
 
                             default: break;
@@ -316,14 +435,17 @@ namespace ISIP523_Bashlykova
 
                     case 5:
                         Console.WriteLine();
+                        AddStudentToCourse();
                         break;
 
                     case 6:
                         Console.WriteLine();
+                        ShowStudentCourses();
                         break;
 
                     case 7:
                         Console.WriteLine();
+                        ShowCourseStudents();
                         break;
 
                     case 0: outt = false; break;
