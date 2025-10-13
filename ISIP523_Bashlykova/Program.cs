@@ -30,6 +30,16 @@ namespace ISIP523_Bashlykova
             private int age;
             private string email;
 
+            public string GetFullName()
+            {
+                return $"{name} {surname}";
+            }
+
+            public string GetSurname()
+            {
+                return surname;
+            }
+
             public Person(string name, string surname, int age, string email)
             {
                 this.name = name;
@@ -38,7 +48,7 @@ namespace ISIP523_Bashlykova
                 this.email = email;
             }
 
-            public virtual void printInfo()
+            public virtual void vyvodInfo()
             {
                 Console.WriteLine($"Имя: {name}\nФамилия: {surname}\nВозраст: {age}\nКорпоративная почта: {email}");
             }
@@ -56,10 +66,9 @@ namespace ISIP523_Bashlykova
                 this.godobych = godobych;
             }
 
-            public override void printInfo()
+            public override void vyvodInfo()
             {
-                //Console.WriteLine("ИНФОРМАЦИЯ О С");
-                base.printInfo();
+                base.vyvodInfo();
                 Console.WriteLine($"Номер группы: {group}\nКурс: {godobych}");
             }
         }
@@ -76,10 +85,9 @@ namespace ISIP523_Bashlykova
                 this.experience = experience;
             }
 
-            public override void printInfo()
+            public override void vyvodInfo()
             {
-                //Console.WriteLine("ИНФОРМАЦИЯ О С");
-                base.printInfo();
+                base.vyvodInfo();
                 Console.WriteLine($"Зарплата: {salary}\nСтаж работы: {experience}");
             }
         }
@@ -90,6 +98,17 @@ namespace ISIP523_Bashlykova
             private Teacher teacher;
             private string duration;
             private List<Student> Students = new List<Student>();
+
+            public Course(string title, string duration)
+            {
+                this.title = title;
+                this.duration = duration;
+            }
+
+            public void GetTeacher(Teacher teacher)
+            {
+                this.teacher = teacher;
+            }
 
             public void AddStudent(Student student)
             {
@@ -121,6 +140,7 @@ namespace ISIP523_Bashlykova
             Console.WriteLine("Введите год обучения: ");
             int year = Convert.ToInt32(Console.ReadLine());
             allStud.Add(new Student(name, surname, age, email, group, year));
+            Console.WriteLine("\nСтудент добавлен!");
         }
 
         static List<Teacher> allTeach = new List<Teacher>();
@@ -139,20 +159,101 @@ namespace ISIP523_Bashlykova
             Console.WriteLine("Введите стаж работы: ");
             int experience = Convert.ToInt32(Console.ReadLine());
             allTeach.Add(new Teacher(name, surname, age, email, salary, experience));
-
+            Console.WriteLine("\nПреподаватель добавлен!");
         }
 
-
-        static void Main(string[] args)
+        static List<Course> AllCourses = new List<Course>();
+        static void addCourse()
         {
+            Console.Write("Введите название курса: ");
+            string title = Console.ReadLine();
+            Console.Write("Введите длительность курса: ");
+            string duration = Console.ReadLine();
+
+            Course newCourse = new Course(title, duration);
+
+            if (allTeach.Count == 0)
+            {
+                Console.WriteLine("Нет доступных преподавателей. Сначала добавьте хотя бы одного.");
+            }
+            else
+            {
+                Console.WriteLine("\nСписок преподавателей:");
+                foreach (var t in allTeach)
+                {
+                    t.vyvodInfo();
+                    Console.WriteLine();
+                }
+
+                Console.Write("Введите фамилию преподавателя для назначения на курс: ");
+                string surnameSearch = Console.ReadLine();
+
+                Teacher foundTeacher = allTeach.Find(t => t.GetSurname().Equals(surnameSearch, StringComparison.OrdinalIgnoreCase));
+
+                if (foundTeacher != null)
+                {
+                    newCourse.GetTeacher(foundTeacher);
+                    Console.WriteLine($"Преподаватель {foundTeacher.GetFullName()} назначен на курс.");
+                }
+                else
+                {
+                    Console.WriteLine("Преподаватель с такой фамилией не найден.");
+                }
+            }
+
+            if (allStud.Count == 0)
+            {
+                Console.WriteLine("\nНет студентов для добавления.");
+            }
+            else
+            {
+                Console.WriteLine("\nДобавление студентов на курс (введите '0', чтобы закончить):");
+                foreach (var s in allStud)
+                {
+                    s.vyvodInfo();
+                    Console.WriteLine();
+                }
+
+                bool adding = true;
+                while (adding)
+                {
+                    Console.Write("Введите фамилию студента для добавления (или '0' для выхода): ");
+                    string studSurname = Console.ReadLine();
+
+                    if (studSurname == "0")
+                    {
+                        adding = false;
+                        continue;
+                    }
+
+                    Student foundStudent = allStud.Find(s => s.GetSurname().Equals(studSurname, StringComparison.OrdinalIgnoreCase));
+
+                    if (foundStudent != null)
+                    {
+                        newCourse.AddStudent(foundStudent);
+                        Console.WriteLine($" Студент {foundStudent.GetFullName()} добавлен на курс.");
+                    }
+                    else
+                    {
+                        Console.WriteLine(" Студент с такой фамилией не найден.");
+                    }
+                }
+            }
+
+            AllCourses.Add(newCourse);
+            Console.WriteLine("\n Курс добавлен!");
+        }
+
+            static void Main(string[] args)
+            {
             bool outt = true;
             while (outt)
             {
                 Console.WriteLine("\nМЕНЮ:");
                 Console.WriteLine("1. Добавить студента");
                 Console.WriteLine("2. Добавить преподавателя");
-                Console.WriteLine("3. Вывод списков");
-                Console.WriteLine("4. Создать курс");
+                Console.WriteLine("3. Создать курс");
+                Console.WriteLine("4. Вывод списков");
                 Console.WriteLine("5. Записать студента на курс");
                 Console.WriteLine("6. Назначить преподавателя на курс");
                 Console.WriteLine("7. Список курсов студента");
@@ -175,6 +276,11 @@ namespace ISIP523_Bashlykova
                         break;
 
                     case 3:
+                        Console.WriteLine();
+                        addCourse();    
+                        break;
+
+                    case 4:
                         Console.WriteLine("\nВЫБОР СПИСКА:");
                         Console.WriteLine("1. Список студентов");
                         Console.WriteLine("2. Список преподавателей");
@@ -185,20 +291,27 @@ namespace ISIP523_Bashlykova
                         switch (choicepoisk)
                         {
                             case 1:
+                                Console.WriteLine("\nСТУДЕНТЫ\n");
+                                foreach(var stud in allStud)
+                                {
+                                    stud.vyvodInfo();
+                                }
                                 break;
 
                             case 2:
+                                Console.WriteLine("\nПРЕПОДАВАТЕЛИ\n");
+                                foreach (var prep in allTeach)
+                                {
+                                    prep.vyvodInfo();
+                                }
                                 break;
 
                             case 3:
+                                Console.WriteLine("\nКУРСЫ\n");
                                 break;
 
                             default: break;
                         }
-                        break;
-
-                    case 4:
-                        Console.WriteLine();
                         break;
 
                     case 5:
