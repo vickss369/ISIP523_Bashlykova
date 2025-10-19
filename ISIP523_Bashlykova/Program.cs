@@ -270,6 +270,60 @@ namespace ISIP523_Bashlykova
             }
         }
 
+        static void Battle(Player player, Enemy enemy)
+        {
+            Console.WriteLine($"Вы столкнулись с врагом: {enemy.enemyName} (HP: {enemy.enemyHP})");
+
+            bool playerFrozen = false;
+            while (player.playerHP > 0 && enemy.enemyHP > 0)
+            {
+                bool protection = false;
+                if (!playerFrozen)
+                {
+                    Console.WriteLine($"\nВаш HP: {player.playerHP}, HP врага: {enemy.enemyHP}");
+                    Console.WriteLine("1 — Атака\n2 — Защита");
+                    string choice = Console.ReadLine();
+
+                    if (choice == "1")
+                    {
+                        double yron = player.playerAttack - enemy.enemyProtect;
+                        if (yron < 1) yron = 5;
+                        enemy.enemyHP -= yron;
+                        Console.WriteLine($"\nВы нанесли {yron} урона врагу!");
+                    }
+                    else if (choice == "2")
+                    {
+                        protection = true;
+                    }
+                }
+                else
+                {
+                    playerFrozen = false;
+                }
+
+                if (enemy.enemyHP <= 0) break;
+
+                double enemyDmg = enemy.DamageToPlayer(player, protection);
+                player.playerHP -= enemyDmg;
+                Console.WriteLine($"{enemy.enemyName} нанёс вам {enemyDmg} урона!");
+
+                if (enemy is Mag magEnemy && magEnemy.FreezePlayer())
+                {
+                    Console.WriteLine("\nВы заморожены магией врага!\nВы не можете ходить и пропускаете свой ход.");
+                    playerFrozen = true;
+                }
+
+                if (player.playerHP <= 0)
+                {
+                    Console.WriteLine("\nВы погибли...(");
+                    Environment.Exit(0);
+                }
+            }
+
+            Console.WriteLine($"\nВы победили врага {enemy.enemyName}!\n");
+        }
+
+
         static void Main(string[] args)
         {
 
