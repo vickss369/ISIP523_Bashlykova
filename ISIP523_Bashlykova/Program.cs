@@ -140,6 +140,24 @@ namespace ISIP523_Bashlykova
 
             public Skelet(string name, double hp, double attack, double protect)
                 : base(name, hp, attack, protect) { }
+
+            public override double DamageToPlayer(Player player, bool protection)
+            {
+                double damage = enemyAttack;
+
+                if (protection)
+                {
+                    int evadeChance = random.Next(100);
+                    if (evadeChance < 40)
+                    {
+                        Console.WriteLine("\nВы успешно уклонились от атаки!");
+                        return 0;
+                    }
+                    Console.WriteLine("\nСкелет проигнорировал вашу защиту!");
+                }
+
+                return damage;
+            }
         }
 
         class Mag : Enemy
@@ -176,6 +194,11 @@ namespace ISIP523_Bashlykova
                 this.enemyAttack = 20 * 1.8;
                 this.enemyProtect = 15 * 0.6;
                 this.chanceFreeze = 34.5;
+            }
+
+            public bool FreezePlayer()
+            {
+                return random.Next(100) < chanceFreeze;
             }
         }
 
@@ -313,7 +336,13 @@ namespace ISIP523_Bashlykova
                     playerFrozen = true;
                 }
 
-                if (player.playerHP <= 0)
+                else if (enemy is Pestov pestovEnemy && pestovEnemy.FreezePlayer())
+                {
+                    Console.WriteLine("\nПестов использовал свою особую способность!\nВы заморожены и пропускаете следующий ход.");
+                    playerFrozen = true;
+                }
+
+                    if (player.playerHP <= 0)
                 {
                     Console.WriteLine("\nВы погибли...(");
                     Environment.Exit(0);
@@ -323,10 +352,35 @@ namespace ISIP523_Bashlykova
             Console.WriteLine($"\nВы победили врага {enemy.enemyName}!\n");
         }
 
-
         static void Main(string[] args)
         {
+            Player player = new Player(100, 20, 10);
+            int turn = 0;
 
+            while (true)
+            {
+                turn++;
+                Console.WriteLine($"\n~~~ Ход {turn} ~~~");
+
+                if (turn % 10 == 0)
+                {
+                    Enemy boss = GenerateBoss();
+                    Console.WriteLine("ВНИМАНИЕ!!! БОСС!!!!!");
+                    Battle(player, boss);
+                }
+                else
+                {
+                    if (random.Next(101) < 50)
+                    {
+                        Enemy enemy = GenerateEnemy();
+                        Battle(player, enemy);
+                    }
+                    else
+                    {
+                        OpenSyndyk(player);
+                    }
+                }
+            }
         }
     }
 }
