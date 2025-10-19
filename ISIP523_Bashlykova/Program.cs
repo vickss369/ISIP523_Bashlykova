@@ -36,10 +36,10 @@ namespace ISIP523_Bashlykova
                 playerAttack = attack;
                 playerProtect = protect;
 
-                weaponName = "Деревянный меч";
+                weaponName = "Кулаки";
                 playerAttack = 20;
-                armorName = "Тканевая броня";
-                playerProtect = 5;
+                armorName = "Одежда";
+                playerProtect = 10;
             }
         }
 
@@ -202,6 +202,77 @@ namespace ISIP523_Bashlykova
                 case 3: return new Pestov();
                 default: return new Pestov();
             }
+        }
+
+        static void OpenSyndyk(Player player)
+        {
+            Syndyk item = (Syndyk)random.Next(1, 6);
+            Console.WriteLine($"\nВы нашли сундук! Предмет: {item}");
+
+            switch (item)
+            {
+                case Syndyk.Лечебное_зелье:
+                    player.playerHP = player.maxHP;
+                    Console.WriteLine("Вы полностью восстановили здоровье!");
+                    break;
+
+                case Syndyk.Деревянный_меч:
+                    TakeWeapon(player, "Деревянный меч", 20);
+                    break;
+
+                case Syndyk.Металлический_меч:
+                    TakeWeapon(player, "Металлический меч", 30);
+                    break;
+
+                case Syndyk.Деревянные_доспехи:
+                    TakeProtection(player, "Деревянные доспехи", 20);
+                    break;
+
+                case Syndyk.Железные_доспехи:
+                    TakeProtection(player, "Железные доспехи", 30);
+                    break;
+            }
+        }
+
+        static void TakeWeapon(Player player, string newWeaponName, double newWeaponAttack)
+        {
+            Console.WriteLine($"\nВаше текущее оружие: {player.weaponName} (+{player.playerAttack} атаки)");
+            Console.WriteLine($"Новое оружие: {newWeaponName} (+{newWeaponAttack} атаки)");
+            Console.Write("\nВзять новое оружие? (y/n): ");
+            string input = Console.ReadLine();
+            if (input.ToLower() == "y")
+            {
+                player.weaponName = newWeaponName;
+                player.playerAttack = newWeaponAttack;
+                Console.WriteLine($"Вы экипировали {newWeaponName}.");
+            }
+            else
+            {
+                Console.WriteLine("Вы выбросили предмет.");
+            }
+        }
+
+        static void TakeProtection(Player player, string newArmorName, double newArmorProtect)
+        {
+            Console.WriteLine($"\nВаша текущая броня: {player.armorName} (+{player.playerProtect} защиты)");
+            Console.WriteLine($"Новая броня: {newArmorName} (+{newArmorProtect} защиты)");
+            Console.Write("\nВзять новую броню? (y/n): ");
+            string input = Console.ReadLine();
+            if (input.ToLower() == "y")
+            {
+                player.armorName = newArmorName;
+                player.playerProtect = newArmorProtect;
+                Console.WriteLine($"Вы экипировали {newArmorName}.");
+            }
+            else
+            {
+                Console.WriteLine("Вы выбросили предмет.");
+            }
+        }
+
+        static void Main(string[] args)
+        {
+
         }
     }
 }
