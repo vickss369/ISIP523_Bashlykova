@@ -295,7 +295,7 @@ namespace ISIP523_Bashlykova
 
         static void Battle(Player player, Enemy enemy)
         {
-            Console.WriteLine($"Вы столкнулись с врагом: {enemy.enemyName} (HP: {enemy.enemyHP})");
+            Console.WriteLine($"Вы столкнулись с врагом: {enemy.enemyName}");
 
             bool playerFrozen = false;
             while (player.playerHP > 0 && enemy.enemyHP > 0)
@@ -303,8 +303,15 @@ namespace ISIP523_Bashlykova
                 bool protection = false;
                 if (!playerFrozen)
                 {
-                    Console.WriteLine($"\nВаш HP: {player.playerHP}, HP врага: {enemy.enemyHP}");
-                    Console.WriteLine("1 — Атака\n2 — Защита");
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine($"Ваш HP: {player.playerHP}");
+                    Console.ResetColor();
+
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"HP врага: {enemy.enemyHP}");
+                    Console.ResetColor();
+
+                    Console.WriteLine("\n1 — Атака\n2 — Защита");
                     string choice = Console.ReadLine();
 
                     if (choice == "1")
@@ -335,14 +342,13 @@ namespace ISIP523_Bashlykova
                     Console.WriteLine("\nВы заморожены магией врага!\nВы не можете ходить и пропускаете свой ход.");
                     playerFrozen = true;
                 }
-
                 else if (enemy is Pestov pestovEnemy && pestovEnemy.FreezePlayer())
                 {
                     Console.WriteLine("\nПестов использовал свою особую способность!\nВы заморожены и пропускаете следующий ход.");
                     playerFrozen = true;
                 }
 
-                    if (player.playerHP <= 0)
+                if (player.playerHP <= 0)
                 {
                     Console.WriteLine("\nВы погибли...(");
                     Environment.Exit(0);
