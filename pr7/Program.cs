@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISIP523_Bashlykova
+namespace pr7
 {
     internal class Program
     {
         static void Main(string[] args)
         {
-
         }
     }
 }
