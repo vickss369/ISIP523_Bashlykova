@@ -94,7 +94,6 @@ namespace ISIP523_Bashlykova
             }*/
         }
 
-
         static void Main(string[] args)
         {
 
