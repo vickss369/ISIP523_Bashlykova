@@ -1,54 +1,98 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace ISIP523_Bashlykova
 {
     internal class Program
     {
-        class Car
+        class Carr
         {
+            private static int nextId = 1;
             public int id;
             public string mark;
             public string problem;
 
-            public Car(int id, string mark, string problem)
+            public Carr(string mark, string problem)
             {
-                this.id = id;      
+                this.id = nextId++; 
                 this.mark = mark;
                 this.problem = problem;
             }
-        }
 
-        class Client
-        {
-            public int id;
-            public string fio;
-            public Car car;
-
-            public Client(int id, string fio, Car car)
+            public void AddCar()
             {
-                this.id = id;
-                this.fio = fio;
-                this.car = car;
+                Console.Write("Введите марку машины: ");
+                string mark = Console.ReadLine();
+                Console.Write("Введите описание проблемы: ");
+                string problem = Console.ReadLine();
+                Carr car = new Carr(mark, problem);
+
+                Core.Context.Car.Add(new Car
+                {
+                    Mark = mark,
+                    Problem = problem
+                });
+                Core.Context.SaveChanges();
             }
         }
 
-        class Detail
+        class Clientt
         {
+            private static int nextId = 1;
+            public int id;
+            public string fio;
+            public Carr car;
+
+            public Clientt(string fio, Carr car)
+            {
+                this.id = nextId++;
+                this.fio = fio;
+                this.car = car;
+            }
+
+            public void AddClient()
+            {
+                Console.Write("Введите ФИО клиента: ");
+                string fio = Console.ReadLine();
+                Console.Write("Введите марку машины: ");
+                string mark = Console.ReadLine();
+                Console.Write("Введите описание проблемы: ");
+                string problem = Console.ReadLine();
+                Clientt newClient = new Clientt(fio, new Carr(mark, problem));
+
+                Core.Context.Client.Add(new Client
+                {
+                    FIO = fio,
+                    CarID = this.id
+                });
+                Core.Context.SaveChanges();
+            }
+        }
+
+        class Details
+        {
+            private static int nextId = 1;
             public int id;
             public string name;
             public double price;
             public int quantity;
 
-            public Detail(int id, string name, double price, int quantity)
+            public Details(string name, double price, int quantity)
             {
-                this.id = id;
+                this.id = nextId++;
                 this.name = name;
                 this.price = price;
                 this.quantity = quantity;
+            }
+
+            public void ShowDetInfo()
+            {
+                Console.WriteLine($"\nНазвание: {name}\nЦена: {price}\nКоличество на складе: {quantity}"); 
             }
 
             /*public bool IsOnSklad()
@@ -60,12 +104,12 @@ namespace ISIP523_Bashlykova
             }*/
         }
 
-        class Sklad
+        class Skladd
         {
             public int id;
-            public List<Detail> allDetails = new List<Detail>();
+            public List<Details> allDetails = new List<Details>();
 
-            public Sklad(int id, List<Detail> allDetails)
+            public Skladd(int id, List<Details> allDetails)
             {
                 this.id = id;
                 this.allDetails = allDetails;
@@ -79,9 +123,42 @@ namespace ISIP523_Bashlykova
                 return detail != null && detail.QuantityOnSklad > 0;
             }
 
-            /*public void AddDetail(Detail part)
+            public void ShowAllDetails()
             {
-            }*/
+                if (allDetails.Count == 0)
+                {
+                    Console.WriteLine("На складе пока нет деталей.");
+                }
+                else
+                {
+                    Console.WriteLine("Детали на складе:");
+                    foreach (Details d in allDetails)
+                    {
+                        d.ShowDetInfo();
+                    }
+                }
+            }
+
+            public void AddDetail()
+            {
+                Console.Write("Введите название детали: ");
+                string name = Console.ReadLine();
+                Console.Write("Введите цену детали: ");
+                double price = Convert.ToDouble(Console.ReadLine());
+                Console.Write("Введите количество: ");
+                int quantity = Convert.ToInt32(Console.ReadLine());
+                Details det = new Details(name, price, quantity);
+                allDetails.Add(det);
+
+                Core.Context.Detail.Add(new Detail
+                {
+                    Name = name,
+                    Price = price,
+                    QuantityOnSklad = quantity
+                });
+                Core.Context.SaveChanges();
+                Console.WriteLine($"\nДеталь «{name}» успешно добавлена на склад!");
+            }
 
             /*public void TakeAndRemoveDetail(string partName, int quantity)
             {
@@ -91,12 +168,12 @@ namespace ISIP523_Bashlykova
         class RepairOrder
         {
             public int id;
-            public Client client;
-            public List<Detail> neededParts = new List<Detail>();
+            public Clientt client;
+            public List<Details> neededParts = new List<Details>();
             public double cost;
             public string status;
 
-            public RepairOrder(int id, Client client, List<Detail> neededParts, double cost, string status)
+            public RepairOrder(int id, Clientt client, List<Details> neededParts, double cost, string status)
             {
                 this.id = id;
                 this.client = client;
@@ -115,9 +192,22 @@ namespace ISIP523_Bashlykova
             public int id;
             public string name;
             public double balance;
-            public Sklad sklad;
-            public List<RepairOrder> orders = new List<RepairOrder>();
+            public Skladd sklad;
+            public AutoService(int id, string name, double balance, Skladd sklad)
+            {
+                this.id = id;
+                this.name = name;
+                this.balance = balance;
+                this.sklad = sklad;
+            }
 
+            public void ShowAutoserviceInfo()
+            {
+                Console.WriteLine($"Название автосервиса: {name}");
+                Console.WriteLine($"Баланс: {balance} монет");
+                //Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                sklad.ShowAllDetails();
+            }
 
             /*public void TakeOrder(RepairOrder order)
             {
@@ -134,26 +224,17 @@ namespace ISIP523_Bashlykova
             /*public void BuyDetails(Detail part, int quantity)
             {
             }*/
-
-            /*public void ShowInfo()
-            {
-            }*/
         }
 
         static void Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8; //для смайликов, надеюсь сработает:(
 
-            AutoService service = new AutoService
-            {
-                id = 1,
-                name = "Автосервис PR7",
-                balance = 1000,
-                sklad = new Sklad(1, new List<Detail>())
-            };
+            Skladd mySklad = new Skladd(1, new List<Details>());
+            AutoService service = new AutoService(1, "Автосервис PR7", 1000, mySklad);
 
             Console.WriteLine("🚗 Добро пожаловать в «Автосервис PR7»!");
-            Console.WriteLine("У тебя есть 1000 монет и склад с деталями");
+            Console.WriteLine("У тебя есть 1000 монет и склад БЕЗ ДЕТАЛЕЙ");
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
             bool outt = true;
@@ -170,8 +251,8 @@ namespace ISIP523_Bashlykova
                 {
                     Console.WriteLine("\n📋МЕНЮ:");
                     Console.WriteLine("1. Принять нового клиента");
-                    Console.WriteLine("2. Купить детали");
-                    Console.WriteLine("3. Показать информацию о сервисе");
+                    Console.WriteLine("2. Купить детали на склад");
+                    Console.WriteLine("3. Показать информацию об автосервисе");
                     Console.WriteLine("0. Выход");
 
                     Console.Write("Введите выбор: ");
@@ -181,23 +262,15 @@ namespace ISIP523_Bashlykova
                     {
                         case 1:
                             Console.WriteLine("\n~~~ Новый клиент ~~~");
-                            Console.Write("Введите ФИО клиента: ");
-                            string fio = Console.ReadLine();
-                            Console.Write("Введите марку машины: ");
-                            string mark = Console.ReadLine();
-                            Console.Write("Введите описание проблемы: ");
-                            string problem = Console.ReadLine();
-
-                            Client newClient = new Client(1, fio, new Car(1, mark, problem));
-
                             break;
 
                         case 2:
+                            mySklad.AddDetail();
                             break;
 
                         case 3:
                             Console.WriteLine("\n~~~ Информация о автосервисе: ~~~");
-                            //service.ShowInfo();
+                            service.ShowAutoserviceInfo();
                             break;
 
                         case 0: outt = false; break;
