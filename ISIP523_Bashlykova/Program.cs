@@ -142,8 +142,73 @@ namespace ISIP523_Bashlykova
 
         static void Main(string[] args)
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8; //для смайликов, надеюсь сработает:(
+
+            AutoService service = new AutoService
+            {
+                id = 1,
+                name = "Автосервис PR7",
+                balance = 1000,
+                sklad = new Sklad(1, new List<Detail>())
+            };
+
+            Console.WriteLine("🚗 Добро пожаловать в «Автосервис PR7»!");
+            Console.WriteLine("У тебя есть 1000 монет и склад с деталями");
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+            bool outt = true;
+            while (outt)
+            {
+                if (service.balance <= 0)
+                {
+                    Console.WriteLine("\n💸 Вы обанкротились:(\nИгра окончена.");
+                    Console.WriteLine("\nНажмите любую клавишу, чтобы выйти...");
+                    Console.ReadKey();
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("\n📋МЕНЮ:");
+                    Console.WriteLine("1. Принять нового клиента");
+                    Console.WriteLine("2. Купить детали");
+                    Console.WriteLine("3. Показать информацию о сервисе");
+                    Console.WriteLine("0. Выход");
+
+                    Console.Write("Введите выбор: ");
+                    int choice = Convert.ToInt32(Console.ReadLine());
+
+                    switch (choice)
+                    {
+                        case 1:
+                            Console.WriteLine("\n~~~ Новый клиент ~~~");
+                            Console.Write("Введите ФИО клиента: ");
+                            string fio = Console.ReadLine();
+                            Console.Write("Введите марку машины: ");
+                            string mark = Console.ReadLine();
+                            Console.Write("Введите описание проблемы: ");
+                            string problem = Console.ReadLine();
+
+                            Client newClient = new Client(1, fio, new Car(1, mark, problem));
+
+                            break;
+
+                        case 2:
+                            break;
+
+                        case 3:
+                            Console.WriteLine("\n~~~ Информация о автосервисе: ~~~");
+                            //service.ShowInfo();
+                            break;
+
+                        case 0: outt = false; break;
+
+                        default: Console.WriteLine("Неправильный пункт меню."); break;
+                    }
+                }
             }
+        }
     }
 }
+
 
 
