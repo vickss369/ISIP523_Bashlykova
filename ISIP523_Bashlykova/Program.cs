@@ -52,47 +52,49 @@ namespace ISIP523_Bashlykova
             {
                 Console.WriteLine($"\nНазвание: {name}\nЦена: {price}\nКоличество на складе: {quantity}");
             }
-
-            public bool IsOnSklad()
-            {
-                Console.Write("Введите название необходимой детали для проверки наличия на складе: ");
-                string nameNeededDetail = Console.ReadLine();
-                var detail = Core.Context.Detail.FirstOrDefault(d => d.Name == nameNeededDetail);
-                return detail != null && detail.QuantityOnSklad > 0;
-            }
         }
 
         class Skladd
         {
             public int id;
+            public string name;
             public List<Details> allDetails = new List<Details>();
 
-            public Skladd(int id, List<Details> allDetails)
+            public Skladd(int id, string name, List<Details> allDetails)
             {
                 this.id = id;
+                this.name = name;
                 this.allDetails = allDetails;
+
+                var dbSklad = Core.Context.Sklad.FirstOrDefault(s => s.Address == name);
+                if (dbSklad == null)
+                {
+                    Core.Context.Sklad.Add(new Sklad
+                    {
+                        Address = name
+                    });
+                    Core.Context.SaveChanges();
+                }
             }
 
             public bool CheckDetailOnSklad(string partName)
             {
-                Console.Write("\nВведите название необходимой детали для проверки наличия на складе: ");
-                string nameNeededDetail = Console.ReadLine();
-                var detail = Core.Context.Detail.FirstOrDefault(d => d.Name == nameNeededDetail);
+                var detail = Core.Context.Detail.FirstOrDefault(d => d.Name == partName);
                 return detail != null && detail.QuantityOnSklad > 0;
             }
 
             public void ShowAllDetails()
             {
-                if (allDetails.Count == 0)
+                if (Core.Context.Detail.Count() == 0)
                 {
                     Console.WriteLine("На складе пока нет деталей.");
                 }
                 else
                 {
                     Console.WriteLine("Детали на складе:");
-                    foreach (Details d in allDetails)
+                    foreach (var d in Core.Context.Detail)
                     {
-                        d.ShowDetInfo();
+                        Console.WriteLine($"\nНазвание: {d.Name}\nЦена: {d.Price}\nКоличество на складе: {d.QuantityOnSklad}");
                     }
                 }
             }
@@ -102,21 +104,26 @@ namespace ISIP523_Bashlykova
                 Details det = new Details(name, price, quantity);
                 allDetails.Add(det);
 
-                Core.Context.Detail.Add(new Detail
+                var existing = Core.Context.Detail.FirstOrDefault(d => d.Name == name);
+                if (existing != null)
                 {
-                    Name = name,
-                    Price = price,
-                    QuantityOnSklad = quantity
-                });
+                    existing.QuantityOnSklad += quantity;
+                }
+                else
+                {
+                    Core.Context.Detail.Add(new Detail
+                    {
+                        Name = name,
+                        Price = price,
+                        QuantityOnSklad = quantity
+                    });
+                }
                 Core.Context.SaveChanges();
             }
 
-            public void TakeAndRemoveDetail()
+            public void TakeAndRemoveDetail(string nameNeededDetail)
             {
-                Console.Write("\nВведите название необходимой детали: ");
-                string nameNeededDetail = Console.ReadLine();
-                Detail detail = Core.Context.Detail.FirstOrDefault(d => d.Name.Contains(nameNeededDetail));
-
+                Detail detail = Core.Context.Detail.FirstOrDefault(d => d.Name == nameNeededDetail);
 
                 if (detail == null)
                 {
@@ -126,12 +133,12 @@ namespace ISIP523_Bashlykova
                 else if (detail.QuantityOnSklad == 1)
                 {
                     Core.Context.Detail.Remove(detail);
-                    Console.WriteLine("\nДетали больше нет на складе(нужно купить)");
+                    Console.WriteLine($"\nДеталь {nameNeededDetail} закончилась на складе.");
                 }
                 else
                 {
                     detail.QuantityOnSklad--;
-                    Console.WriteLine("\nВы взяли деталь со склада.");
+                    Console.WriteLine($"\nВы взяли деталь {nameNeededDetail} со склада.");
                 }
 
                 Core.Context.SaveChanges();
@@ -148,7 +155,6 @@ namespace ISIP523_Bashlykova
 
             public RepairOrder(int id, Clientt client, List<Details> neededParts, double cost, string status)
             {
-                this.id = id;
                 this.client = client;
                 this.neededParts = neededParts;
                 this.cost = cost;
@@ -157,8 +163,8 @@ namespace ISIP523_Bashlykova
 
             public double CalculateRepairCost()
             {
-                double detailCost = neededParts.Sum(d => d.price); 
-                double workCost = 1000; // постоянная оплата за работу, надеюсь не много хочу
+                double detailCost = neededParts.Sum(d => d.price);
+                double workCost = 1000;
                 return detailCost + workCost;
             }
         }
@@ -169,12 +175,38 @@ namespace ISIP523_Bashlykova
             public string name;
             public double balance;
             public Skladd sklad;
+
+            public int clientsServed = 0;
+            public List<(string name, double price, int quantity)> pendingDeliveries = new List<(string, double, int)>();
+
             public AutoService(int id, string name, double balance, Skladd sklad)
             {
                 this.id = id;
                 this.name = name;
                 this.balance = balance;
                 this.sklad = sklad;
+
+                var dbService = Core.Context.Autoservice.FirstOrDefault(s => s.Name == name);
+                if (dbService == null)
+                {
+                    Core.Context.Autoservice.Add(new Autoservice
+                    {
+                        Name = name,
+                        Balance = balance,
+                        SkladID = Core.Context.Sklad.First(s => s.Address == sklad.name).ID
+                    });
+                    Core.Context.SaveChanges();
+                }
+            }
+
+            public void UpdateBalanceInDB()
+            {
+                var dbService = Core.Context.Autoservice.FirstOrDefault(s => s.Name == name);
+                if (dbService != null)
+                {
+                    dbService.Balance = balance;
+                    Core.Context.SaveChanges();
+                }
             }
 
             public void ShowAutoserviceInfo()
@@ -184,53 +216,83 @@ namespace ISIP523_Bashlykova
                 sklad.ShowAllDetails();
             }
 
-            public void TakeOrder(RepairOrder order)
+            public void CheckPendingDeliveries()
+            {
+                if (clientsServed >= 2 && pendingDeliveries.Count > 0)
+                {
+                    foreach (var p in pendingDeliveries)
+                    {
+                        sklad.AddDetail(p.name, p.price, p.quantity);
+                        Console.WriteLine($"\n📦 Поставка прибыла: {p.quantity} шт. детали {p.name} добавлены на склад!");
+                    }
+                    pendingDeliveries.Clear();
+                    clientsServed = 0;
+                }
+            }
+
+            public void TakeOrder(RepairOrder order, int dbClientID)
             {
                 Console.WriteLine($"\nПринят заказ от клиента {order.client.fio} на ремонт {order.client.car.mark}");
                 Console.WriteLine($"Сломанная деталь: {order.neededParts[0].name}");
                 Console.WriteLine($"Стоимость ремонта: {order.CalculateRepairCost()}");
 
+                var dbOrder = new RepairOrders
+                {
+                    ClientID = dbClientID,
+                    Cost = order.CalculateRepairCost(),
+                    Status = "Принят"
+                };
+                Core.Context.RepairOrders.Add(dbOrder);
+                Core.Context.SaveChanges();
+
                 bool hasPart = sklad.CheckDetailOnSklad(order.neededParts[0].name);
                 if (hasPart)
                 {
-                    RepairCar(order);
+                    RepairCar(order, dbOrder);
                 }
                 else
                 {
-                    Console.WriteLine("На складе нет нужной детали.");
-                    RejectOrder(order);
+                    Console.WriteLine("\nНа складе нет нужной детали.");
+                    RejectOrder(order, dbOrder);
                 }
             }
 
-            public void RejectOrder(RepairOrder order)
+            public void RejectOrder(RepairOrder order, RepairOrders dbOrder)
             {
-                double penalty = order.CalculateRepairCost() * 0.8; // штраф за отказ
+                double penalty = order.CalculateRepairCost() * 0.8;
                 balance -= penalty;
-                Console.WriteLine($"Клиент недоволен. Штраф: {penalty}. Баланс: {balance}");
+                dbOrder.Status = "Отказ";
+                Core.Context.SaveChanges();
+
+                UpdateBalanceInDB();
+                Console.WriteLine($"\nКлиент недоволен. Штраф: {penalty}. Баланс: {balance}");
             }
 
-            public void RepairCar(RepairOrder order)
+            public void RepairCar(RepairOrder order, RepairOrders dbOrder)
             {
                 foreach (var part in order.neededParts)
                 {
                     if (sklad.CheckDetailOnSklad(part.name))
                     {
-                        sklad.TakeAndRemoveDetail();
+                        sklad.TakeAndRemoveDetail(part.name);
                     }
                     else
                     {
-                        if (sklad.allDetails.Count > 0) // если детали нет, берем случайную
+                        var randomPart = Core.Context.Detail.FirstOrDefault();
+                        if (randomPart != null)
                         {
-                            var randomPart = sklad.allDetails[new Random().Next(sklad.allDetails.Count)];
-                            sklad.TakeAndRemoveDetail();
+                            sklad.TakeAndRemoveDetail(randomPart.Name);
                             double damage = order.CalculateRepairCost() * 1.5;
                             balance -= damage;
-                            Console.WriteLine($"Использована другая деталь {randomPart.name}. Клиент недоволен! Штраф: {damage}. Баланс: {balance}");
+                            dbOrder.Status = "Неудачный ремонт";
+                            Core.Context.SaveChanges();
+                            UpdateBalanceInDB();
+                            Console.WriteLine($"\nИспользована другая деталь {randomPart.Name}. Клиент недоволен! Штраф: {damage}. Баланс: {balance}");
                             return;
                         }
                         else
                         {
-                            RejectOrder(order);
+                            RejectOrder(order, dbOrder);
                             return;
                         }
                     }
@@ -238,8 +300,17 @@ namespace ISIP523_Bashlykova
 
                 double payment = order.CalculateRepairCost();
                 balance += payment;
-                order.status = "Ремонт выполнен";
-                Console.WriteLine($"Ремонт выполнен успешно! Клиент оплатил {payment}. Баланс: {balance}");
+                dbOrder.Status = "Выполнен";
+                Core.Context.SaveChanges();
+
+                UpdateBalanceInDB();
+                Console.WriteLine($"\n✅ Ремонт выполнен успешно! Клиент оплатил {payment}. Баланс: {balance}");
+            }
+
+            public void FinishClient()
+            {
+                clientsServed++;
+                CheckPendingDeliveries();
             }
 
             public void BuyDetails()
@@ -263,92 +334,99 @@ namespace ISIP523_Bashlykova
 
                 if (balance < totalCost)
                 {
-                    Console.WriteLine($"Недостаточно средств. Стоимость покупки: {totalCost}, Баланс: {balance}");
+                    Console.WriteLine($"\nНедостаточно средств. Стоимость покупки: {totalCost}, Баланс: {balance}");
                     return;
                 }
                 balance -= totalCost;
+                UpdateBalanceInDB();
 
-                sklad.AddDetail(dName, pricePerUnit, quantity);
-                Console.WriteLine($"Вы купили {quantity} шт. детали «{dName}» за {totalCost} монет. Остаток баланса: {balance}");
+                pendingDeliveries.Add((dName, pricePerUnit, quantity));
+                Console.WriteLine($"\n🕒 Вы купили {quantity} шт. детали «{dName}» за {totalCost} монет. Поставка прибудет через 2 клиента.");
             }
         }
-
-        static void Main(string[] args)
-        {
-            Console.OutputEncoding = System.Text.Encoding.UTF8; //для смайликов, надеюсь сработает:(
-
-            Skladd mySklad = new Skladd(1, new List<Details>());
-            AutoService service = new AutoService(1, "Автосервис PR7", 100000, mySklad);
-
-            Console.WriteLine("🚗 Добро пожаловать в «Автосервис PR7»!");
-            Console.WriteLine("У тебя есть 100000 монет и склад БЕЗ ДЕТАЛЕЙ");
-            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-
-            bool outt = true;
-            while (outt)
+            static void Main(string[] args)
             {
-                if (service.balance <= 0)
+                Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+                Skladd mySklad = new Skladd(1, "Склад №1", new List<Details>());
+                AutoService service = new AutoService(1, "Автосервис PR7", 10000, mySklad);
+
+                Console.WriteLine("🚗 Добро пожаловать в «Автосервис PR7»!");
+                Console.WriteLine("У тебя есть 10000 монет и склад БЕЗ ДЕТАЛЕЙ");
+                Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+                bool outt = true;
+                while (outt)
                 {
-                    Console.WriteLine("\n💸 Вы обанкротились:(\nИгра окончена.");
-                    Console.WriteLine("\nНажмите любую клавишу, чтобы выйти...");
-                    Console.ReadKey();
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine("\n📋МЕНЮ:");
-                    Console.WriteLine("1. Принять нового клиента");
-                    Console.WriteLine("2. Купить детали на склад");
-                    Console.WriteLine("3. Показать информацию об автосервисе");
-                    Console.WriteLine("0. Выход");
-
-                    Console.Write("Введите выбор: ");
-                    int choice = Convert.ToInt32(Console.ReadLine());
-
-
-                    switch (choice)
+                    if (service.balance <= 0)
                     {
-                        case 1:
-                            Console.WriteLine("\n~~~ Новый клиент ~~~");
-                            Console.Write("\nВведите ФИО клиента: ");
-                            string fio = Console.ReadLine();
-                            Console.Write("Введите марку машины: ");
-                            string mark = Console.ReadLine();
-                            Console.Write("Введите описание проблемы: ");
-                            string problem = Console.ReadLine();
+                        Console.WriteLine("\n💸 Вы обанкротились:(\nИгра окончена.");
+                        Console.WriteLine("\nНажмите любую клавишу, чтобы выйти...");
+                        Console.ReadKey();
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("\n📋 МЕНЮ:");
+                        Console.WriteLine("1. Принять нового клиента");
+                        Console.WriteLine("2. Купить детали на склад");
+                        Console.WriteLine("3. Показать информацию об автосервисе");
+                        Console.WriteLine("0. Выход");
 
-                            Car dbCar = new Car
-                            {
-                                Mark = mark,
-                                Problem = problem
-                            };
-                            Core.Context.Car.Add(dbCar);
-                            Core.Context.SaveChanges();
+                        Console.Write("Введите выбор: ");
+                        int choice = Convert.ToInt32(Console.ReadLine());
 
-                            Client dbClient = new Client
-                            {
-                                FIO = fio,
-                                CarID = dbCar.ID
-                            };
-                            Core.Context.Client.Add(dbClient);
-                            Core.Context.SaveChanges();
-                            break;
+                        switch (choice)
+                        {
+                            case 1:
+                                Console.WriteLine("\n~~~ Новый клиент ~~~");
+                                Console.Write("\nВведите ФИО клиента: ");
+                                string fio = Console.ReadLine();
+                                Console.Write("Введите марку машины: ");
+                                string mark = Console.ReadLine();
+                                Console.Write("Введите сломанную деталь: ");
+                                string problem = Console.ReadLine();
 
-                        case 2:
-                            service.BuyDetails();
-                            break;
+                                Car dbCar = new Car
+                                {
+                                    Mark = mark,
+                                    Problem = problem
+                                };
+                                Core.Context.Car.Add(dbCar);
+                                Core.Context.SaveChanges();
+                                Client dbClient = new Client
+                                {
+                                    FIO = fio,
+                                    CarID = dbCar.ID
+                                };
+                                Core.Context.Client.Add(dbClient);
+                                Core.Context.SaveChanges();
 
-                        case 3:
-                            Console.WriteLine("\n~~~ Информация о автосервисе: ~~~");
-                            service.ShowAutoserviceInfo();
-                            break;
+                                Carr car = new Carr(mark, problem);
+                                Clientt client = new Clientt(fio, car);
+                                Details needed = new Details(problem, 3000, 1);
+                                List<Details> parts = new List<Details> { needed };
+                                RepairOrder order = new RepairOrder(1, client, parts, 0, "В ожидании");
 
-                        case 0: outt = false; break;
+                                service.TakeOrder(order, dbClient.ID);
+                                service.FinishClient();
+                                break;
 
-                        default: Console.WriteLine("Неправильный пункт меню."); break;
+                            case 2:
+                                service.BuyDetails();
+                                break;
+
+                            case 3:
+                                Console.WriteLine("\n~~~ Информация о автосервисе: ~~~");
+                                service.ShowAutoserviceInfo();
+                                break;
+
+                            case 0: outt = false; break;
+
+                            default: Console.WriteLine("Неправильный пункт меню."); break;
+                        }
                     }
                 }
             }
         }
     }
-}
