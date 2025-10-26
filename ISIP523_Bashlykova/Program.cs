@@ -10,71 +10,32 @@ namespace ISIP523_Bashlykova
     {
         class Carr
         {
-            private static int nextId = 1;
             public int id { get; set; }
             public string mark;
             public string problem;
 
             public Carr(string mark, string problem)
             {
-                //this.id = nextId++; 
                 this.mark = mark;
                 this.problem = problem;
             }
-
-            /*public void AddCar()
-            {
-                Console.Write("Введите марку машины: ");
-                string mark = Console.ReadLine();
-                Console.Write("Введите описание проблемы: ");
-                string problem = Console.ReadLine();
-                Carr car = new Carr(mark, problem);
-
-                Core.Context.Car.Add(new Car
-                {
-                    Mark = mark,
-                    Problem = problem
-                });
-                Core.Context.SaveChanges();
-            }*/
         }
 
         class Clientt
         {
-            private static int nextId = 1;
             public int id { get; set; }
             public string fio;
             public Carr car;
 
             public Clientt(string fio, Carr car)
             {
-                //this.id = nextId++;
                 this.fio = fio;
                 this.car = car;
             }
-
-            /*public void AddClient()
-            {
-                Console.Write("Введите ФИО клиента: ");
-                string fio = Console.ReadLine();
-                Console.Write("Введите марку машины: ");
-                string mark = Console.ReadLine();
-                Console.Write("Введите описание проблемы: ");
-                string problem = Console.ReadLine();
-                Clientt newClient = new Clientt(fio, new Carr(mark, problem));
-
-                Core.Context.Client.Add(new Client
-                {
-                    FIO = fio,
-                    CarID = this.id
-                });
-                Core.Context.SaveChanges();
-            }*/
         }
 
         class Details
         {
-            private static int nextId = 1;
             public int id { get; set; }
             public string name;
             public double price;
@@ -82,7 +43,6 @@ namespace ISIP523_Bashlykova
 
             public Details(string name, double price, int quantity)
             {
-                this.id = nextId++;
                 this.name = name;
                 this.price = price;
                 this.quantity = quantity;
@@ -93,13 +53,13 @@ namespace ISIP523_Bashlykova
                 Console.WriteLine($"\nНазвание: {name}\nЦена: {price}\nКоличество на складе: {quantity}");
             }
 
-            /*public bool IsOnSklad()
+            public bool IsOnSklad()
             {
                 Console.Write("Введите название необходимой детали для проверки наличия на складе: ");
                 string nameNeededDetail = Console.ReadLine();
                 var detail = Core.Context.Detail.FirstOrDefault(d => d.Name == nameNeededDetail);
                 return detail != null && detail.QuantityOnSklad > 0;
-            }*/
+            }
         }
 
         class Skladd
@@ -149,7 +109,6 @@ namespace ISIP523_Bashlykova
                     QuantityOnSklad = quantity
                 });
                 Core.Context.SaveChanges();
-                Console.WriteLine($"\nДеталь «{name}» успешно добавлена на склад!");
             }
 
             public void TakeAndRemoveDetail()
@@ -196,9 +155,12 @@ namespace ISIP523_Bashlykova
                 this.status = status;
             }
 
-            /*public double CalculateRepairCost()
+            public double CalculateRepairCost()
             {
-            }*/
+                double detailCost = neededParts.Sum(d => d.price); 
+                double workCost = 1000; // постоянная оплата за работу, надеюсь не много хочу
+                return detailCost + workCost;
+            }
         }
 
         class AutoService
@@ -222,17 +184,63 @@ namespace ISIP523_Bashlykova
                 sklad.ShowAllDetails();
             }
 
-            /*public void TakeOrder(RepairOrder order)
+            public void TakeOrder(RepairOrder order)
             {
-            }*/
+                Console.WriteLine($"\nПринят заказ от клиента {order.client.fio} на ремонт {order.client.car.mark}");
+                Console.WriteLine($"Сломанная деталь: {order.neededParts[0].name}");
+                Console.WriteLine($"Стоимость ремонта: {order.CalculateRepairCost()}");
 
-            /*public void RejectOrder(RepairOrder order)
-            {
-            }*/
+                bool hasPart = sklad.CheckDetailOnSklad(order.neededParts[0].name);
+                if (hasPart)
+                {
+                    RepairCar(order);
+                }
+                else
+                {
+                    Console.WriteLine("На складе нет нужной детали.");
+                    RejectOrder(order);
+                }
+            }
 
-            /*public void RepairCar(RepairOrder order)
+            public void RejectOrder(RepairOrder order)
             {
-            }*/
+                double penalty = order.CalculateRepairCost() * 0.8; // штраф за отказ
+                balance -= penalty;
+                Console.WriteLine($"Клиент недоволен. Штраф: {penalty}. Баланс: {balance}");
+            }
+
+            public void RepairCar(RepairOrder order)
+            {
+                foreach (var part in order.neededParts)
+                {
+                    if (sklad.CheckDetailOnSklad(part.name))
+                    {
+                        sklad.TakeAndRemoveDetail();
+                    }
+                    else
+                    {
+                        if (sklad.allDetails.Count > 0) // если детали нет, берем случайную
+                        {
+                            var randomPart = sklad.allDetails[new Random().Next(sklad.allDetails.Count)];
+                            sklad.TakeAndRemoveDetail();
+                            double damage = order.CalculateRepairCost() * 1.5;
+                            balance -= damage;
+                            Console.WriteLine($"Использована другая деталь {randomPart.name}. Клиент недоволен! Штраф: {damage}. Баланс: {balance}");
+                            return;
+                        }
+                        else
+                        {
+                            RejectOrder(order);
+                            return;
+                        }
+                    }
+                }
+
+                double payment = order.CalculateRepairCost();
+                balance += payment;
+                order.status = "Ремонт выполнен";
+                Console.WriteLine($"Ремонт выполнен успешно! Клиент оплатил {payment}. Баланс: {balance}");
+            }
 
             public void BuyDetails()
             {
