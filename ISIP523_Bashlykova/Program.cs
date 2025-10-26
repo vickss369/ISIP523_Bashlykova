@@ -117,7 +117,7 @@ namespace ISIP523_Bashlykova
 
             public bool CheckDetailOnSklad(string partName)
             {
-                Console.Write("Введите название необходимой детали для проверки наличия на складе: ");
+                Console.Write("\nВведите название необходимой детали для проверки наличия на складе: ");
                 string nameNeededDetail = Console.ReadLine();
                 var detail = Core.Context.Detail.FirstOrDefault(d => d.Name == nameNeededDetail);
                 return detail != null && detail.QuantityOnSklad > 0;
@@ -139,14 +139,8 @@ namespace ISIP523_Bashlykova
                 }
             }
 
-            public void AddDetail()
+            public void AddDetail(string name, double price, int quantity)
             {
-                Console.Write("Введите название детали: ");
-                string name = Console.ReadLine();
-                Console.Write("Введите цену детали: ");
-                double price = Convert.ToDouble(Console.ReadLine());
-                Console.Write("Введите количество: ");
-                int quantity = Convert.ToInt32(Console.ReadLine());
                 Details det = new Details(name, price, quantity);
                 allDetails.Add(det);
 
@@ -160,9 +154,30 @@ namespace ISIP523_Bashlykova
                 Console.WriteLine($"\nДеталь «{name}» успешно добавлена на склад!");
             }
 
-            /*public void TakeAndRemoveDetail(string partName, int quantity)
+            public void TakeAndRemoveDetail()
             {
-            }*/
+                Console.Write("\nВведите название необходимой детали: ");
+                string nameNeededDetail = Console.ReadLine();
+                Detail detail = Core.Context.Detail.FirstOrDefault(d => d.Name.Contains(nameNeededDetail));
+
+               if (detail == null)
+               {
+                    Console.WriteLine("Деталь не найдена на складе.");
+                    return;
+               }
+                else if (detail.QuantityOnSklad == 1)
+                {
+                    Core.Context.Detail.Remove(detail);
+                    Console.WriteLine("\nДетали больше нет на складе(нужно купить)");
+                }
+                else
+                {
+                    detail.QuantityOnSklad--;
+                    Console.WriteLine("\nВы взяли деталь со склада.");
+                }
+
+                Core.Context.SaveChanges();
+            }
         }
 
         class RepairOrder
@@ -205,7 +220,6 @@ namespace ISIP523_Bashlykova
             {
                 Console.WriteLine($"Название автосервиса: {name}");
                 Console.WriteLine($"Баланс: {balance} монет");
-                //Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 sklad.ShowAllDetails();
             }
 
@@ -221,9 +235,35 @@ namespace ISIP523_Bashlykova
             {
             }*/
 
-            /*public void BuyDetails(Detail part, int quantity)
+            public void BuyDetails()
             {
-            }*/
+                Console.Write("\nВведите название детали, которую хотите купить: ");
+                string dName = Console.ReadLine();
+                Console.Write("Введите цену детали: ");
+                double pricePerUnit;
+                while (!double.TryParse(Console.ReadLine(), out pricePerUnit) || pricePerUnit < 0)
+                {
+                    Console.Write("Ошибка! Введите корректную цену: ");
+                }
+                Console.Write("Введите количество деталей для покупки: ");
+                int quantity;
+                while (!int.TryParse(Console.ReadLine(), out quantity) || quantity <= 0)
+                {
+                    Console.Write("Ошибка! Введите корректное количество: ");
+                }
+
+                double totalCost = pricePerUnit * quantity;
+
+                if (balance < totalCost)
+                {
+                    Console.WriteLine($"Недостаточно средств. Стоимость покупки: {totalCost}, Баланс: {balance}");
+                    return;
+                }
+                balance -= totalCost;
+
+                sklad.AddDetail(dName, pricePerUnit, quantity);
+                Console.WriteLine($"Вы купили {quantity} шт. детали «{dName}» за {totalCost} монет. Остаток баланса: {balance}");
+            }
         }
 
         static void Main(string[] args)
@@ -234,7 +274,7 @@ namespace ISIP523_Bashlykova
             AutoService service = new AutoService(1, "Автосервис PR7", 1000, mySklad);
 
             Console.WriteLine("🚗 Добро пожаловать в «Автосервис PR7»!");
-            Console.WriteLine("У тебя есть 1000 монет и склад БЕЗ ДЕТАЛЕЙ");
+            Console.WriteLine("У тебя есть 100000 монет и склад БЕЗ ДЕТАЛЕЙ");
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
             bool outt = true;
@@ -265,7 +305,7 @@ namespace ISIP523_Bashlykova
                             break;
 
                         case 2:
-                            mySklad.AddDetail();
+                            service.BuyDetails();
                             break;
 
                         case 3:
