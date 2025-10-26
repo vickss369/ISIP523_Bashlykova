@@ -246,14 +246,46 @@ namespace ISIP523_Bashlykova
                 Core.Context.SaveChanges();
 
                 bool hasPart = sklad.CheckDetailOnSklad(order.neededParts[0].name);
+
                 if (hasPart)
                 {
                     RepairCar(order, dbOrder);
                 }
                 else
                 {
-                    Console.WriteLine("\nНа складе нет нужной детали.");
-                    RejectOrder(order, dbOrder);
+                    Console.WriteLine($"\n❌ На складе нет нужной детали «{order.neededParts[0].name}».");
+                    Console.WriteLine("Выберите действие:");
+                    Console.WriteLine("1. Отказать клиенту (штраф)");
+                    Console.WriteLine("2. Поставить другую деталь (риск)");
+
+                    Console.Write("Ваш выбор: ");
+                    int choiseorder = Convert.ToInt32(Console.ReadLine());
+
+                    if (choiseorder == 1)
+                    {
+                        RejectOrder(order, dbOrder);
+                    }
+                    else if (choiseorder == 2)
+                    {
+                        Console.WriteLine("\n🔧 Вы решили рискнуть и поставить другую деталь...");
+
+                        var randomPart = Core.Context.Detail.FirstOrDefault();
+                        if (randomPart != null)
+                        {
+                            sklad.TakeAndRemoveDetail(randomPart.Name);
+                            double damage = order.CalculateRepairCost() * 2;
+                            balance -= damage;
+                            dbOrder.Status = "Неудачный ремонт (риск)";
+                            Console.WriteLine($"\n💥 Клиент недоволен! Деталь не подошла. Возмещение ущерба: {damage}. \nБаланс: {balance}");
+                            Core.Context.SaveChanges();
+                            UpdateBalanceInDB();
+                        }
+                        else
+                        {
+                            Console.WriteLine("\n⚠️ На складе вообще нет деталей, отказано в заказе.");
+                            RejectOrder(order, dbOrder);
+                        }
+                    }
                 }
             }
 
@@ -344,89 +376,106 @@ namespace ISIP523_Bashlykova
                 Console.WriteLine($"\n🕒 Вы купили {quantity} шт. детали «{dName}» за {totalCost} монет. Поставка прибудет через 2 клиента.");
             }
         }
-            static void Main(string[] args)
+
+        public static void ClearDatabase()
+        {
+            Console.WriteLine("⚠️ Очистка базы данных...");
+
+            Core.Context.RepairOrders.RemoveRange(Core.Context.RepairOrders);
+            Core.Context.Client.RemoveRange(Core.Context.Client);
+            Core.Context.Car.RemoveRange(Core.Context.Car);
+            Core.Context.Detail.RemoveRange(Core.Context.Detail);
+            Core.Context.Sklad.RemoveRange(Core.Context.Sklad);
+            Core.Context.Autoservice.RemoveRange(Core.Context.Autoservice);
+
+            Core.Context.SaveChanges();
+
+            Console.WriteLine("✅ Все данные из базы успешно удалены!");
+        }
+
+        static void Main(string[] args)
+        {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Skladd mySklad = new Skladd(1, "Склад №1", new List<Details>());
+            AutoService service = new AutoService(1, "Автосервис PR7", 10000, mySklad);
+
+            Console.WriteLine("🚗 Добро пожаловать в «Автосервис PR7»!");
+            Console.WriteLine("У тебя есть 10000 монет и склад БЕЗ ДЕТАЛЕЙ");
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+            ClearDatabase();
+            bool outt = true;
+            while (outt)
             {
-                Console.OutputEncoding = System.Text.Encoding.UTF8;
-
-                Skladd mySklad = new Skladd(1, "Склад №1", new List<Details>());
-                AutoService service = new AutoService(1, "Автосервис PR7", 10000, mySklad);
-
-                Console.WriteLine("🚗 Добро пожаловать в «Автосервис PR7»!");
-                Console.WriteLine("У тебя есть 10000 монет и склад БЕЗ ДЕТАЛЕЙ");
-                Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-
-                bool outt = true;
-                while (outt)
+                if (service.balance <= 0)
                 {
-                    if (service.balance <= 0)
+                    Console.WriteLine("\n💸 Вы обанкротились:(\nИгра окончена.");
+                    Console.WriteLine("\nНажмите любую клавишу, чтобы выйти...");
+                    Console.ReadKey();
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("\n📋 МЕНЮ:");
+                    Console.WriteLine("1. Принять нового клиента");
+                    Console.WriteLine("2. Купить детали на склад");
+                    Console.WriteLine("3. Показать информацию об автосервисе");
+                    Console.WriteLine("0. Выход");
+
+                    Console.Write("Введите выбор: ");
+                    int choice = Convert.ToInt32(Console.ReadLine());
+
+                    switch (choice)
                     {
-                        Console.WriteLine("\n💸 Вы обанкротились:(\nИгра окончена.");
-                        Console.WriteLine("\nНажмите любую клавишу, чтобы выйти...");
-                        Console.ReadKey();
-                        break;
-                    }
-                    else
-                    {
-                        Console.WriteLine("\n📋 МЕНЮ:");
-                        Console.WriteLine("1. Принять нового клиента");
-                        Console.WriteLine("2. Купить детали на склад");
-                        Console.WriteLine("3. Показать информацию об автосервисе");
-                        Console.WriteLine("0. Выход");
+                        case 1:
+                            Console.WriteLine("\n~~~ Новый клиент ~~~");
+                            Console.Write("\nВведите ФИО клиента: ");
+                            string fio = Console.ReadLine();
+                            Console.Write("Введите марку машины: ");
+                            string mark = Console.ReadLine();
+                            Console.Write("Введите сломанную деталь: ");
+                            string problem = Console.ReadLine();
 
-                        Console.Write("Введите выбор: ");
-                        int choice = Convert.ToInt32(Console.ReadLine());
+                            Car dbCar = new Car
+                            {
+                                Mark = mark,
+                                Problem = problem
+                            };
+                            Core.Context.Car.Add(dbCar);
+                            Core.Context.SaveChanges();
+                            Client dbClient = new Client
+                            {
+                                FIO = fio,
+                                CarID = dbCar.ID
+                            };
+                            Core.Context.Client.Add(dbClient);
+                            Core.Context.SaveChanges();
 
-                        switch (choice)
-                        {
-                            case 1:
-                                Console.WriteLine("\n~~~ Новый клиент ~~~");
-                                Console.Write("\nВведите ФИО клиента: ");
-                                string fio = Console.ReadLine();
-                                Console.Write("Введите марку машины: ");
-                                string mark = Console.ReadLine();
-                                Console.Write("Введите сломанную деталь: ");
-                                string problem = Console.ReadLine();
+                            Carr car = new Carr(mark, problem);
+                            Clientt client = new Clientt(fio, car);
+                            Details needed = new Details(problem, 3000, 1);
+                            List<Details> parts = new List<Details> { needed };
+                            RepairOrder order = new RepairOrder(1, client, parts, 0, "В ожидании");
 
-                                Car dbCar = new Car
-                                {
-                                    Mark = mark,
-                                    Problem = problem
-                                };
-                                Core.Context.Car.Add(dbCar);
-                                Core.Context.SaveChanges();
-                                Client dbClient = new Client
-                                {
-                                    FIO = fio,
-                                    CarID = dbCar.ID
-                                };
-                                Core.Context.Client.Add(dbClient);
-                                Core.Context.SaveChanges();
+                            service.TakeOrder(order, dbClient.ID);
+                            service.FinishClient();
+                            break;
 
-                                Carr car = new Carr(mark, problem);
-                                Clientt client = new Clientt(fio, car);
-                                Details needed = new Details(problem, 3000, 1);
-                                List<Details> parts = new List<Details> { needed };
-                                RepairOrder order = new RepairOrder(1, client, parts, 0, "В ожидании");
+                        case 2:
+                            service.BuyDetails();
+                            break;
 
-                                service.TakeOrder(order, dbClient.ID);
-                                service.FinishClient();
-                                break;
+                        case 3:
+                            Console.WriteLine("\n~~~ Информация о автосервисе: ~~~");
+                            service.ShowAutoserviceInfo();
+                            break;
 
-                            case 2:
-                                service.BuyDetails();
-                                break;
+                        case 0: outt = false; break;
 
-                            case 3:
-                                Console.WriteLine("\n~~~ Информация о автосервисе: ~~~");
-                                service.ShowAutoserviceInfo();
-                                break;
-
-                            case 0: outt = false; break;
-
-                            default: Console.WriteLine("Неправильный пункт меню."); break;
-                        }
+                        default: Console.WriteLine("Неправильный пункт меню."); break;
                     }
                 }
             }
         }
     }
+}
