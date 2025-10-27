@@ -37,8 +37,8 @@ namespace ISIP523_Bashlykova
         class Details
         {
             public int id { get; set; }
-            public string name;
-            public double price;
+            public string name { get; set; }
+            public double price { get; set; }
             public int quantity;
 
             public Details(string name, double price, int quantity)
@@ -149,25 +149,42 @@ namespace ISIP523_Bashlykova
         {
             public int id;
             public Clientt client;
-            public List<Details> neededParts = new List<Details>();
+            public Details neededPart;
             public double cost;
             public string status;
 
-            public RepairOrder(int id, Clientt client, List<Details> neededParts, double cost, string status)
+            public RepairOrder(int id, Clientt client, Details neededPart, double cost, string status)
             {
+                this.id = id;
                 this.client = client;
-                this.neededParts = neededParts;
+                this.neededPart = neededPart;
                 this.cost = cost;
                 this.status = status;
             }
 
             public double CalculateRepairCost()
             {
-                double detailCost = neededParts.Sum(d => d.price);
+                double detailCost = 0;
+
+                if (neededPart != null)
+                {
+                    detailCost = neededPart.price > 0
+                        ? neededPart.price
+                        : GetDetailPriceFromDatabase(neededPart.name);
+                }
+
                 double workCost = 1000;
-                return detailCost + workCost;
+                double total = detailCost + workCost;
+                return total;
+            }
+
+            private double GetDetailPriceFromDatabase(string name)
+            {
+                var dbDetail = Core.Context.Detail.FirstOrDefault(d => d.Name == name);
+                return dbDetail?.Price ?? 0;
             }
         }
+
 
         class AutoService
         {
@@ -233,7 +250,7 @@ namespace ISIP523_Bashlykova
             public void TakeOrder(RepairOrder order, int dbClientID)
             {
                 Console.WriteLine($"\nПринят заказ от клиента {order.client.fio} на ремонт {order.client.car.mark}");
-                Console.WriteLine($"Сломанная деталь: {order.neededParts[0].name}");
+                Console.WriteLine($"Сломанная деталь: {order.neededPart.name}");
                 Console.WriteLine($"Стоимость ремонта: {order.CalculateRepairCost()}");
 
                 var dbOrder = new RepairOrders
@@ -245,7 +262,7 @@ namespace ISIP523_Bashlykova
                 Core.Context.RepairOrders.Add(dbOrder);
                 Core.Context.SaveChanges();
 
-                bool hasPart = sklad.CheckDetailOnSklad(order.neededParts[0].name);
+                bool hasPart = sklad.CheckDetailOnSklad(order.neededPart.name);
 
                 if (hasPart)
                 {
@@ -253,7 +270,7 @@ namespace ISIP523_Bashlykova
                 }
                 else
                 {
-                    Console.WriteLine($"\n❌ На складе нет нужной детали «{order.neededParts[0].name}».");
+                    Console.WriteLine($"\n❌ На складе нет нужной детали «{order.neededPart.name}».");
                     Console.WriteLine("Выберите действие:");
                     Console.WriteLine("1. Отказать клиенту (штраф)");
                     Console.WriteLine("2. Поставить другую деталь (риск)");
@@ -302,31 +319,30 @@ namespace ISIP523_Bashlykova
 
             public void RepairCar(RepairOrder order, RepairOrders dbOrder)
             {
-                foreach (var part in order.neededParts)
+                var part = order.neededPart;
+
+                if (sklad.CheckDetailOnSklad(part.name))
                 {
-                    if (sklad.CheckDetailOnSklad(part.name))
+                    sklad.TakeAndRemoveDetail(part.name);
+                }
+                else
+                {
+                    var randomPart = Core.Context.Detail.FirstOrDefault();
+                    if (randomPart != null)
                     {
-                        sklad.TakeAndRemoveDetail(part.name);
+                        sklad.TakeAndRemoveDetail(randomPart.Name);
+                        double damage = order.CalculateRepairCost() * 1.5;
+                        balance -= damage;
+                        dbOrder.Status = "Неудачный ремонт";
+                        Core.Context.SaveChanges();
+                        UpdateBalanceInDB();
+                        Console.WriteLine($"\nИспользована другая деталь {randomPart.Name}. Клиент недоволен! Штраф: {damage}. Баланс: {balance}");
+                        return;
                     }
                     else
                     {
-                        var randomPart = Core.Context.Detail.FirstOrDefault();
-                        if (randomPart != null)
-                        {
-                            sklad.TakeAndRemoveDetail(randomPart.Name);
-                            double damage = order.CalculateRepairCost() * 1.5;
-                            balance -= damage;
-                            dbOrder.Status = "Неудачный ремонт";
-                            Core.Context.SaveChanges();
-                            UpdateBalanceInDB();
-                            Console.WriteLine($"\nИспользована другая деталь {randomPart.Name}. Клиент недоволен! Штраф: {damage}. Баланс: {balance}");
-                            return;
-                        }
-                        else
-                        {
-                            RejectOrder(order, dbOrder);
-                            return;
-                        }
+                        RejectOrder(order, dbOrder);
+                        return;
                     }
                 }
 
@@ -395,15 +411,20 @@ namespace ISIP523_Bashlykova
 
         static void Main(string[] args)
         {
+            //ClearDatabase();
+
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Skladd mySklad = new Skladd(1, "Склад №1", new List<Details>());
-            AutoService service = new AutoService(1, "Автосервис PR7", 10000, mySklad);
+            AutoService service = new AutoService(1, "Автосервис PR7", 100000, mySklad);
+
+            mySklad.AddDetail("Двигатель", 5000, 1);
+            mySklad.AddDetail("Колесо", 2000, 1);
+            mySklad.AddDetail("Тормоза", 1000, 1);
 
             Console.WriteLine("🚗 Добро пожаловать в «Автосервис PR7»!");
-            Console.WriteLine("У тебя есть 10000 монет и склад БЕЗ ДЕТАЛЕЙ");
+            Console.WriteLine("У тебя есть 100000 монет и склад с набором деталей (двигатель, колесо, тормоза)");
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
-            ClearDatabase();
             bool outt = true;
             while (outt)
             {
@@ -443,6 +464,7 @@ namespace ISIP523_Bashlykova
                             };
                             Core.Context.Car.Add(dbCar);
                             Core.Context.SaveChanges();
+
                             Client dbClient = new Client
                             {
                                 FIO = fio,
@@ -453,13 +475,30 @@ namespace ISIP523_Bashlykova
 
                             Carr car = new Carr(mark, problem);
                             Clientt client = new Clientt(fio, car);
-                            Details needed = new Details(problem, 3000, 1);
-                            List<Details> parts = new List<Details> { needed };
-                            RepairOrder order = new RepairOrder(1, client, parts, 0, "В ожидании");
+
+                            Detail dbDetail = Core.Context.Detail.FirstOrDefault(d => d.Name == problem);
+                            double price = 0;
+                            int quantity = 1;
+
+                            if (dbDetail != null)
+                            {
+                                price = dbDetail.Price;
+                                quantity = dbDetail.QuantityOnSklad;
+                            }
+                            else
+                            {
+                                Console.WriteLine($"\n⚠️ Деталь '{problem}' не найдена в базе. Цена установлена по умолчанию: 3000");
+                                price = 3000;
+                            }
+
+                            Details needed = new Details(problem, price, quantity);
+
+                            RepairOrder order = new RepairOrder(1, client, needed, 0, "В ожидании");
 
                             service.TakeOrder(order, dbClient.ID);
                             service.FinishClient();
                             break;
+
 
                         case 2:
                             service.BuyDetails();
