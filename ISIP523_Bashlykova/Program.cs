@@ -37,9 +37,11 @@ namespace ISIP523_Bashlykova
                         break;
 
                     case 3:
+                        CreateOrder();
                         break;
     
                     case 4:
+                        ShowOrderHistory();
                         break;
 
                     case 0: useroutt = false; break;
@@ -121,10 +123,10 @@ namespace ISIP523_Bashlykova
 
         static void WatchProducts()
         {
-            Console.WriteLine("\nНАШИ ТОВАРЫ");
+            Console.WriteLine("\n🛍 НАШИ ТОВАРЫ");
             foreach (var p in Core.Context.Products) 
             {
-                Console.WriteLine($"{p.ID}. {p.Name}\n{p.Description}\n{p.Price}₽");
+                Console.WriteLine($"\n{p.ID}. {p.Name}\n{p.Description}\n{p.Price}₽");
             }
         }
 
@@ -135,10 +137,10 @@ namespace ISIP523_Bashlykova
 
             if (ans == "да")
             {
-                Console.Write("Введите название товара, который хотите добавить в корзину:");
+                Console.Write("\nВведите название товара, который хотите добавить в корзину: ");
                 string addProduct = Console.ReadLine();
 
-                var p = Core.Context.Products.FirstOrDefault(pr => pr.Name.ToLower() == addProduct.ToLower());
+                var p = Core.Context.Products.FirstOrDefault(pr => pr.Name.ToLower().Contains(addProduct.ToLower()));
                 if (p == null)
                 {
                     Console.WriteLine("\n❌ Неверное название товара.");
@@ -146,7 +148,7 @@ namespace ISIP523_Bashlykova
                 }
                 else
                 {
-                    Console.Write("Введите количество товара, который хотите добавить в корзину:");
+                    Console.Write("Введите количество товара, который хотите добавить в корзину: ");
                     int kolvo = Convert.ToInt32(Console.ReadLine());
 
                     var basket = Core.Context.Baskets.FirstOrDefault(b => b.UserID == currentUser.ID);
@@ -211,12 +213,205 @@ namespace ISIP523_Bashlykova
             }
         }
 
+        static void CreateOrder()
+        {
+            Console.WriteLine("\nВыберите, что хотите заказать:");
+            Console.WriteLine("1. Купить конкретный товар");
+            Console.WriteLine("2. Купить всю корзину");
+            Console.WriteLine("0. Отмена");
+
+            Console.Write("Введите выбор: ");
+            int orderchoice = Convert.ToInt32(Console.ReadLine());
+
+            switch (orderchoice)
+            {
+                case 1:
+                    BuyOneProd();
+                    break;
+
+                case 2:
+                    BuyAllBasket();
+                    break;
+
+                case 0: Console.WriteLine("🚫 Отменено."); break;
+
+                default: Console.WriteLine("❌ Неверный пункт меню."); break;
+            }
+        }
+
+        static void BuyOneProd()
+        {
+            var basket = Core.Context.Baskets.FirstOrDefault(b => b.UserID == currentUser.ID);
+            if (basket == null)
+            {
+                Console.WriteLine("🧺 У вас нет корзины.");
+                return;
+            }
+
+            var items = Core.Context.BasketProduct.Where(bp => bp.BasketID == basket.ID)
+                .ToList();
+
+            if (items.Count == 0)
+            {
+                Console.WriteLine("🧺 Корзина пуста!");
+                return;
+            }
+
+            Console.WriteLine("\n🛒 Товары в вашей корзине:");
+            foreach (var i in items)
+            {
+                var prod = Core.Context.Products.First(p => p.ID == i.ProductID);
+                Console.WriteLine($"{i.ID}. {prod.Name} — {i.Price} ₽ × {i.Quantity} = {i.Price * i.Quantity}");
+            }
+
+            Console.Write("Введите ID товара из корзины для покупки: ");
+            int basketProductId = Convert.ToInt32(Console.ReadLine());
+
+            var basketItem = items.FirstOrDefault(bp => bp.ID == basketProductId);
+            if (basketItem == null)
+            {
+                Console.WriteLine("❌ Нет такого товара в корзине!");
+                return;
+            }
+
+            var productToBuy = Core.Context.Products.First(p => p.ID == basketItem.ProductID);
+
+            Console.Write("Введите количество для покупки: ");
+            if (!int.TryParse(Console.ReadLine(), out int qty) || qty <= 0 || qty > basketItem.Quantity)
+            {
+                Console.WriteLine("❌ Некорректное количество!");
+                return;
+            }
+
+            Console.WriteLine("\n📦 Доступные ПВЗ:");
+            foreach (var p in Core.Context.PVZ)
+            {
+                Console.WriteLine($"{p.ID}. {p.Name} ({p.Address})");
+            }
+
+            Console.Write("Выберите ПВЗ: ");
+            int pvzId = Convert.ToInt32(Console.ReadLine());
+            var pvz = Core.Context.PVZ.FirstOrDefault(p => p.ID == pvzId);
+            if (pvz == null)
+            {
+                Console.WriteLine("❌ Нет такого ПВЗ!");
+                return;
+            }
+
+            Orders order = new Orders
+            {
+                UserID = currentUser.ID,
+                PVZID = pvz.ID,
+                OrderDate = DateTime.Now,
+                Status = "Создан",
+                TotalSum = productToBuy.Price * qty
+            };
+            Core.Context.Orders.Add(order);
+            Core.Context.SaveChanges();
+
+            OrderItems orderItem = new OrderItems
+            {
+                OrderID = order.ID,
+                ProductID = productToBuy.ID,
+                Quantity = qty,
+                PriceAtBuyMoment = productToBuy.Price
+            };
+            Core.Context.OrderItems.Add(orderItem);
+
+            if (basketItem.Quantity > qty)
+            {
+                basketItem.Quantity -= qty;
+            }
+            else
+            {
+                Core.Context.BasketProduct.Remove(basketItem);
+            }
+
+            basket.Quantity = Core.Context.BasketProduct.Where(bp => bp.BasketID == basket.ID).Sum(bp => bp.Quantity);
+
+            Core.Context.SaveChanges();
+
+            Console.WriteLine($"✅ Заказ №{order.ID} оформлен!\nТовар '{productToBuy.Name}' x{qty} куплен! Стоимость: {productToBuy.Price * qty}₽\nЗабрать в '{pvz.Name}'.");
+        }
+
+        static void BuyAllBasket()
+        {
+            var basket = Core.Context.Baskets.FirstOrDefault(b => b.UserID == currentUser.ID);
+            if (basket == null)
+            {
+                Console.WriteLine("🧺 У вас нет корзины.");
+                return;
+            }
+
+            var items = Core.Context.BasketProduct.Where(bp => bp.BasketID == basket.ID).ToList();
+            if (items.Count == 0)
+            {
+                Console.WriteLine("🧺 Корзина пуста!");
+                return;
+            }
+
+            Console.WriteLine("\n📦 Доступные ПВЗ:");
+            foreach (var p in Core.Context.PVZ)
+            {
+                Console.WriteLine($"\n{p.ID}. {p.Name} \n({p.Address})");
+            }
+
+            Console.Write("Выберите ПВЗ: ");
+            int pvzId = Convert.ToInt32(Console.ReadLine());
+            var pvz = Core.Context.PVZ.FirstOrDefault(p => p.ID == pvzId);
+            if (pvz == null)
+            {
+                Console.WriteLine("❌ Нет такого ПВЗ!");
+                return;
+            }
+
+            Orders order = new Orders
+            {
+                UserID = currentUser.ID,
+                PVZID = pvz.ID,
+                OrderDate = DateTime.Now,
+                Status = "Создан"
+            };
+            Core.Context.Orders.Add(order);
+            Core.Context.SaveChanges();
+
+            double totalSum = 0;
+
+            foreach (var i in items)
+            {
+                var product = Core.Context.Products.First(p => p.ID == i.ProductID);
+
+                OrderItems oi = new OrderItems
+                {
+                    OrderID = order.ID,
+                    ProductID = product.ID,
+                    Quantity = i.Quantity,
+                    PriceAtBuyMoment = i.Price
+                };
+                Core.Context.OrderItems.Add(oi);
+
+                totalSum += i.Price * i.Quantity;
+                Core.Context.BasketProduct.Remove(i);
+            }
+
+            order.TotalSum = totalSum;
+            basket.Quantity = 0;
+
+            Core.Context.SaveChanges();
+            Console.WriteLine($"✅ Заказ №{order.ID} оформлен! \nОбщая сумма: {totalSum} ₽. \nЗабрать в ПВЗ '{pvz.Name}'. \nКорзина очищена.");
+        }
+
+        static void ShowOrderHistory()
+        {
+
+        }
+
         static void AddProductsAndPVZ()
         {
             if (!Core.Context.Products.Any())
             {
                 Core.Context.Products.Add(new Products { Name = "Свитер вязаный", Description = "Oversize-модель, молочный с принтом в красно-синюю клеточку.", Price = 1431.43, StockQuantity = 9 });
-                Core.Context.Products.Add(new Products { Name = "Брелок Козочка", Description = "Мягкая плюшевая козочка из мультика, на карабине", Price = 420.03, StockQuantity = 15 });
+                Core.Context.Products.Add(new Products { Name = "Брелок Козочка", Description = "Мягкая плюшевая козочка из мультика, на карабине.", Price = 420.03, StockQuantity = 15 });
                 Core.Context.Products.Add(new Products { Name = "Блеск для губ Art-visage", Description = "Питательная кремовая текстура, Красно-розовый глянцевый оттенок.", Price = 317.21, StockQuantity = 33 });
                 Core.Context.Products.Add(new Products { Name = "Кулон Анатомическое сердце", Description = "Подвеска ручной работы с переливающейся красной жидкостью внутри.", Price = 437.9, StockQuantity = 13 });
                 Core.Context.Products.Add(new Products { Name = "Набор значков 'Эксклюзивная классика'", Description = "Значки по известным классическим произведениям мировых авторов.", Price = 253.12, StockQuantity = 15 });
