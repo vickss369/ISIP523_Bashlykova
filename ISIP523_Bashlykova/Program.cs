@@ -29,9 +29,11 @@ namespace ISIP523_Bashlykova
                 {
                     case 1:
                         WatchProducts();
+                        AddProductToBasket();
                         break;
 
                     case 2:
+                        ShowBasket();
                         break;
 
                     case 3:
@@ -80,7 +82,16 @@ namespace ISIP523_Bashlykova
                 Core.Context.Users.Add(dbUser);
                 Core.Context.SaveChanges();
 
-                Console.WriteLine("\n✅ Вы успешно зарегистрировались!");
+                Baskets basket = new Baskets
+                {
+                    UserID = dbUser.ID,
+                    Quantity = 0
+                };
+                Core.Context.Baskets.Add(basket);
+                Core.Context.SaveChanges();
+
+
+                Console.WriteLine("\n✅ Вы успешно зарегистрировались!\nУ вас есть пустая корзина - начните наполнять её товарами!");
                 currentUser = dbUser;
                 UserMenu();
             }
@@ -130,7 +141,7 @@ namespace ISIP523_Bashlykova
                 var p = Core.Context.Products.FirstOrDefault(pr => pr.Name.ToLower() == addProduct.ToLower());
                 if (p == null)
                 {
-                    Console.WriteLine("\n❌ Неверное название товара");
+                    Console.WriteLine("\n❌ Неверное название товара.");
                     return;
                 }
                 else
@@ -141,7 +152,11 @@ namespace ISIP523_Bashlykova
                     var basket = Core.Context.Baskets.FirstOrDefault(b => b.UserID == currentUser.ID);
                     if (basket == null)
                     {
-                        basket = new Baskets { UserID = currentUser.ID };
+                        basket = new Baskets 
+                        { 
+                            UserID = currentUser.ID,
+                            Quantity = 0,
+                        };
                         Core.Context.Baskets.Add(basket);
                         Core.Context.SaveChanges();
                     }
@@ -155,21 +170,69 @@ namespace ISIP523_Bashlykova
                     }
                     else
                     {
-                        BasketProduct newItem = new BasketProduct
+                        BasketProduct newBP = new BasketProduct
                         {
                             BasketID = basket.ID,
                             ProductID = p.ID,
                             Quantity = kolvo,
                             Price = p.Price
                         };
-                        Core.Context.BasketProduct.Add(newItem);
+                        Core.Context.BasketProduct.Add(newBP);
                         Console.WriteLine($"✅ {p.Name} x{kolvo} добавлен в корзину!");
+
+                        basket.Quantity = Core.Context.BasketProduct.Where(bp => bp.BasketID == basket.ID).Sum(bp => bp.Quantity);
+
                         Core.Context.SaveChanges();
                     }
                 }
             }
         }
 
+        static void ShowBasket()
+        {
+            var basket = Core.Context.Baskets.FirstOrDefault(b => b.ID == currentUser.ID );
+            var products = Core.Context.BasketProduct.Where(bp => bp.BasketID == basket.ID).ToList();
+            if (basket == null && products.Count == 0)
+            {
+                Console.WriteLine("\n🧺 Корзина пуста!");
+                return;
+            }
+            else
+            {
+                Console.WriteLine("\n🛒 КОРЗИНА");
+                double totalSum = 0;
+                foreach (var pr in products)
+                {
+                    var prod = Core.Context.Products.First(p => p.ID == pr.ProductID);
+                    Console.WriteLine($"{prod.Name} — {pr.Price}₽ × {pr.Quantity} = {pr.Price * pr.Quantity}₽");
+                    totalSum += pr.Price * pr.Quantity;
+                }
+                Console.WriteLine($"💰 Итого: {totalSum}₽");
+            }
+        }
+
+        static void AddProductsAndPVZ()
+        {
+            if (!Core.Context.Products.Any())
+            {
+                Core.Context.Products.Add(new Products { Name = "Свитер вязаный", Description = "Oversize-модель, молочный с принтом в красно-синюю клеточку.", Price = 1431.43, StockQuantity = 9 });
+                Core.Context.Products.Add(new Products { Name = "Брелок Козочка", Description = "Мягкая плюшевая козочка из мультика, на карабине", Price = 420.03, StockQuantity = 15 });
+                Core.Context.Products.Add(new Products { Name = "Блеск для губ Art-visage", Description = "Питательная кремовая текстура, Красно-розовый глянцевый оттенок.", Price = 317.21, StockQuantity = 33 });
+                Core.Context.Products.Add(new Products { Name = "Кулон Анатомическое сердце", Description = "Подвеска ручной работы с переливающейся красной жидкостью внутри.", Price = 437.9, StockQuantity = 13 });
+                Core.Context.Products.Add(new Products { Name = "Набор значков 'Эксклюзивная классика'", Description = "Значки по известным классическим произведениям мировых авторов.", Price = 253.12, StockQuantity = 15 });
+                Core.Context.SaveChanges();
+            }
+
+            if (!Core.Context.PVZ.Any())
+            {
+                Core.Context.PVZ.Add(new PVZ { Name = "МоскваGMWOG", Address = "г. Москва, ул. Бро, 5", Phone = "+7 963 656 0992" });
+                Core.Context.PVZ.Add(new PVZ { Name = "МытищиGMWOG", Address = "г. Мытищи, наб. Чилл, 12", Phone = "+7 916 402 5560" });
+                Core.Context.PVZ.Add(new PVZ { Name = "КазаньGMWOG", Address = "г. Казань, пр. Вайб, 9", Phone = "+7 963 128 5251" });
+                Core.Context.PVZ.Add(new PVZ { Name = "ЧернянкаGMWOG", Address = "пос. Чернянка, Кронштадтский б-р, 19", Phone = "+7 905 678 1889" });
+                Core.Context.PVZ.Add(new PVZ { Name = "ВолоколамскGMWOG", Address = "г. Волоколамск, ул. Смольная, 51", Phone = "+7 985 198 7679" });
+                Core.Context.SaveChanges();
+            }
+        }
 
 
         public static void ClearDatabase()
@@ -195,6 +258,7 @@ namespace ISIP523_Bashlykova
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
             //ClearDatabase();
+            AddProductsAndPVZ();
 
             bool outt = true;
             while (outt)
