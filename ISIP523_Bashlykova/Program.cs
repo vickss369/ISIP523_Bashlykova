@@ -17,9 +17,10 @@ namespace ISIP523_Bashlykova
             {
                 Console.WriteLine("\n📋 МЕНЮ:");
                 Console.WriteLine("1. Просмотр товаров");
-                Console.WriteLine("2. Оформить заказ");
-                Console.WriteLine("3. История заказов");
-                Console.WriteLine("0. Выход из программы(в целом всё)");
+                Console.WriteLine("2. Просмотр корзины");
+                Console.WriteLine("3. Оформить заказ");
+                Console.WriteLine("4. История заказов");
+                Console.WriteLine("0. Выход из аккуанта");
 
                 Console.Write("Введите выбор: ");
                 int userchoice = Convert.ToInt32(Console.ReadLine());
@@ -27,12 +28,16 @@ namespace ISIP523_Bashlykova
                 switch (userchoice)
                 {
                     case 1:
+                        WatchProducts();
                         break;
 
                     case 2:
                         break;
 
                     case 3:
+                        break;
+    
+                    case 4:
                         break;
 
                     case 0: useroutt = false; break;
@@ -84,9 +89,9 @@ namespace ISIP523_Bashlykova
         static void Login()
         {
             Console.WriteLine("\n~~~ Войдите в аккаунт ~~~");
-            Console.Write("Введите имя пользователя: ");
+            Console.Write("Имя пользователя: ");
             string username = Console.ReadLine();
-            Console.Write("Введите пароль: ");
+            Console.Write("Пароль: ");
             string password = Console.ReadLine();
 
             var user = Core.Context.Users.FirstOrDefault(x => x.Username == username && x.Password == password);
@@ -95,10 +100,77 @@ namespace ISIP523_Bashlykova
                 Console.WriteLine("\n❌ Пользователь с таким именем не найден.\nПроверьте корректность введённых данных или зарегистрируйтесь.");
                 return;
             }
-
-            Console.WriteLine($"\n✅ Вы успешно вошли в аккаунт, {user.Username}!");
-            UserMenu();
+            else
+            {
+                Console.WriteLine($"\n✅ Вы успешно вошли в аккаунт, {user.Username}!");
+                currentUser = user;
+                UserMenu();
+            }
         }
+
+        static void WatchProducts()
+        {
+            Console.WriteLine("\nНАШИ ТОВАРЫ");
+            foreach (var p in Core.Context.Products) 
+            {
+                Console.WriteLine($"{p.ID}. {p.Name}\n{p.Description}\n{p.Price}₽");
+            }
+        }
+
+        static void AddProductToBasket()
+        {
+            Console.Write("\nХотите добавить в корзину какой-то товар? (да/нет): ");
+            string ans = Console.ReadLine();
+
+            if (ans == "да")
+            {
+                Console.Write("Введите название товара, который хотите добавить в корзину:");
+                string addProduct = Console.ReadLine();
+
+                var p = Core.Context.Products.FirstOrDefault(pr => pr.Name.ToLower() == addProduct.ToLower());
+                if (p == null)
+                {
+                    Console.WriteLine("\n❌ Неверное название товара");
+                    return;
+                }
+                else
+                {
+                    Console.Write("Введите количество товара, который хотите добавить в корзину:");
+                    int kolvo = Convert.ToInt32(Console.ReadLine());
+
+                    var basket = Core.Context.Baskets.FirstOrDefault(b => b.UserID == currentUser.ID);
+                    if (basket == null)
+                    {
+                        basket = new Baskets { UserID = currentUser.ID };
+                        Core.Context.Baskets.Add(basket);
+                        Core.Context.SaveChanges();
+                    }
+
+                    var existing = Core.Context.BasketProduct.FirstOrDefault(b => b.BasketID == basket.ID && b.ProductID == p.ID);
+
+                    if (existing != null)
+                    {
+                        existing.Quantity += kolvo;
+                        Console.WriteLine($"🔁 Обновлено количество {p.Name}: теперь {existing.Quantity} шт.");
+                    }
+                    else
+                    {
+                        BasketProduct newItem = new BasketProduct
+                        {
+                            BasketID = basket.ID,
+                            ProductID = p.ID,
+                            Quantity = kolvo,
+                            Price = p.Price
+                        };
+                        Core.Context.BasketProduct.Add(newItem);
+                        Console.WriteLine($"✅ {p.Name} x{kolvo} добавлен в корзину!");
+                        Core.Context.SaveChanges();
+                    }
+                }
+            }
+        }
+
+
 
         public static void ClearDatabase()
         {
@@ -147,6 +219,7 @@ namespace ISIP523_Bashlykova
                         break;
 
                     case 3:
+                        WatchProducts();
                         break;
 
                     case 0: outt = false; break;

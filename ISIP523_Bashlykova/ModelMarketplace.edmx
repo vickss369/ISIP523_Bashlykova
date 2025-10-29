@@ -21,7 +21,6 @@
           </Key>
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="UserID" Type="int" Nullable="false" />
-          <Property Name="ProductID" Type="int" Nullable="false" />
           <Property Name="Quantity" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="OrderItems">
@@ -228,7 +227,6 @@
           </Key>
           <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="UserID" Type="Int32" Nullable="false" />
-          <Property Name="ProductID" Type="Int32" Nullable="false" />
           <Property Name="Quantity" Type="Int32" Nullable="false" />
           <NavigationProperty Name="BasketProduct" Relationship="Self.FK_BasketProduct_Baskets" FromRole="Baskets" ToRole="BasketProduct" />
           <NavigationProperty Name="Users" Relationship="Self.FK_Baskets_Users" FromRole="Baskets" ToRole="Users" />
@@ -386,7 +384,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityContainer Name="PR8MarketplaceEntities" annotation:LazyLoadingEnabled="true">
+        <EntityContainer Name="PR8MarketplaceEntities1" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="BasketProduct" EntityType="Self.BasketProduct" />
           <EntitySet Name="Baskets" EntityType="Self.Baskets" />
           <EntitySet Name="OrderItems" EntityType="Self.OrderItems" />
@@ -429,7 +427,7 @@
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="Хранилище PR8MarketplaceModelContainer" CdmEntityContainer="PR8MarketplaceEntities">
+        <EntityContainerMapping StorageEntityContainer="Хранилище PR8MarketplaceModelContainer" CdmEntityContainer="PR8MarketplaceEntities1">
           <EntitySetMapping Name="BasketProduct">
             <EntityTypeMapping TypeName="PR8MarketplaceModel.BasketProduct">
               <MappingFragment StoreEntitySet="BasketProduct">
@@ -446,7 +444,6 @@
               <MappingFragment StoreEntitySet="Baskets">
                 <ScalarProperty Name="ID" ColumnName="ID" />
                 <ScalarProperty Name="UserID" ColumnName="UserID" />
-                <ScalarProperty Name="ProductID" ColumnName="ProductID" />
                 <ScalarProperty Name="Quantity" ColumnName="Quantity" />
               </MappingFragment>
             </EntityTypeMapping>

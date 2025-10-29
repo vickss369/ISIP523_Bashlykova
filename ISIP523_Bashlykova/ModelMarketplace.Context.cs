@@ -13,10 +13,10 @@ namespace ISIP523_Bashlykova
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class PR8MarketplaceEntities : DbContext
+    public partial class PR8MarketplaceEntities1 : DbContext
     {
-        public PR8MarketplaceEntities()
-            : base("name=PR8MarketplaceEntities")
+        public PR8MarketplaceEntities1()
+            : base("name=PR8MarketplaceEntities1")
         {
         }
     
