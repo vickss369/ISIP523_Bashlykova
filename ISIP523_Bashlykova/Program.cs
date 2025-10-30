@@ -220,11 +220,11 @@ namespace ISIP523_Bashlykova
                 if (prod != null)
                 {
                     double itemSum = pr.Price * pr.Quantity;
-                    Console.WriteLine($"{prod.Name} — {pr.Price}₽ × {pr.Quantity} = {itemSum}₽");
+                    Console.WriteLine($"\n{prod.Name} — {pr.Price}₽ × {pr.Quantity} = {itemSum}₽");
                     totalSum += itemSum;
                 }
             }
-            Console.WriteLine($"💰 Итого: {totalSum}₽");
+            Console.WriteLine($"\n💰 Итого: {totalSum}₽");
         }
 
         static void CreateOrder()
@@ -412,7 +412,7 @@ namespace ISIP523_Bashlykova
             basket.Quantity = 0;
 
             Core.Context.SaveChanges();
-            Console.WriteLine($"✅ Заказ №{order.ID} оформлен! \nОбщая сумма: {totalSum} ₽. \nЗабрать в ПВЗ '{pvz.Name}'. \nКорзина очищена.");
+            Console.WriteLine($"\n✅ Заказ №{order.ID} оформлен! \nОбщая сумма: {totalSum} ₽. \nЗабрать в ПВЗ '{pvz.Name}'. \nКорзина очищена.");
         }
 
         static void ShowOrderHistory()
@@ -505,7 +505,7 @@ namespace ISIP523_Bashlykova
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            //ClearDatabase();
+            ClearDatabase();
             AddProductsAndPVZ();
 
             bool outt = true;
