@@ -10,7 +10,7 @@ namespace ISIP523_Bashlykova
     internal class Program
     {
         static Random random = new Random();
-
+        
         enum Syndyk
         {
             Лечебное_зелье = 1,
