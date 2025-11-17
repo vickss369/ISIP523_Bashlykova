@@ -358,35 +358,44 @@ namespace ISIP523_Bashlykova
             Console.WriteLine($"\nВы победили врага {enemy.enemyName}!\n");
         }
 
-        static void Main(string[] args)
+        class Game
         {
-            Player player = new Player(100, 20, 10);
-            int turn = 0;
-
-            while (true)
+            public void playGame()
             {
-                turn++;
-                Console.WriteLine($"\n~~~ Ход {turn} ~~~");
+                Player player = new Player(100, 20, 10);
+                int turn = 0;
 
-                if (turn % 10 == 0)
+                while (true)
                 {
-                    Enemy boss = GenerateBoss();
-                    Console.WriteLine("ВНИМАНИЕ!!! БОСС!!!!!");
-                    Battle(player, boss);
-                }
-                else
-                {
-                    if (random.Next(101) < 50)
+                    turn++;
+                    Console.WriteLine($"\n~~~ Ход {turn} ~~~");
+
+                    if (turn % 10 == 0)
                     {
-                        Enemy enemy = GenerateEnemy();
-                        Battle(player, enemy);
+                        Enemy boss = GenerateBoss();
+                        Console.WriteLine("ВНИМАНИЕ!!! БОСС!!!!!");
+                        Battle(player, boss);
                     }
                     else
                     {
-                        OpenSyndyk(player);
+                        if (random.Next(101) < 50)
+                        {
+                            Enemy enemy = GenerateEnemy();
+                            Battle(player, enemy);
+                        }
+                        else
+                        {
+                            OpenSyndyk(player);
+                        }
                     }
                 }
             }
+        }
+
+        static void Main(string[] args)
+        {
+            Game game1  = new Game();
+            game1.playGame();
         }
     }
 }
