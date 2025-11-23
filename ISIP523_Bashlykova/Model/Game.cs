@@ -12,7 +12,10 @@ namespace ISIP523_Bashlykova.Model
         static void OpenSyndyk(Player player)
         {
             Syndyk item = Syndyk.GetRandomThing();
-            Console.WriteLine($"\nВы нашли сундук! Предмет: {item.name}");
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine("Вы нашли сундук!");
+            Console.ResetColor();
+            Console.WriteLine($"Предмет: {item.name}");
             item.Lyt(player);
         }
 

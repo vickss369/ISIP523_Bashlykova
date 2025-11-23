@@ -14,10 +14,10 @@ namespace ISIP523_Bashlykova.Model
             : base()
         {
             this.enemyName = "Пестов (ААААА)";
-            this.enemyHP = 25 * 1.3;
-            this.enemyAttack = 20 * 1.8;
-            this.enemyProtect = 15 * 0.6;
-            this.chanceFreeze = 34.5;
+            this.enemyHP = Randoms.GetRandomChoice(30, 41) * 1.3;
+            this.enemyAttack = Randoms.GetRandomChoice(15, 26) * 1.8;
+            this.enemyProtect = Randoms.GetRandomChoice(10, 16) * 0.6;
+            this.chanceFreeze = Randoms.GetRandomChoice(25, 36) + (Randoms.GetRandomChoice(25, 36)/100*10);
         }
 
         public bool FreezePlayer()
