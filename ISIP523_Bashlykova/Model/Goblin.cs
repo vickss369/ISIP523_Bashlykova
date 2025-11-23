@@ -39,7 +39,7 @@ namespace ISIP523_Bashlykova.Model
                     int blockPercent = Randoms.BlockPercent();
                     double blockValue = player.playerProtect * (blockPercent / 100.0);
                     yron -= blockValue;
-                    Console.WriteLine($"\nВы не уклонились, но заблокировали {blockPercent}% ({blockValue}) урона!");
+                    Console.WriteLine($"\nВы не уклонились, но заблокировали {blockPercent}% ({blockValue} ед.) урона!");
                     if (yron < 0) yron = 0;
                 }
             }

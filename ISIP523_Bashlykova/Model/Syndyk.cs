@@ -46,8 +46,8 @@ namespace ISIP523_Bashlykova.Model
 
             if (attack > 0)
             {
-                Console.WriteLine($"\nВаше текущее оружие: {player.weaponName} ({player.playerAttack} атаки)");
-                Console.WriteLine($"Новое оружие: {name} ({attack} атаки)");
+                Console.WriteLine($"\nВаше текущее оружие: {player.weaponName} ({player.playerAttack} ед. атаки)");
+                Console.WriteLine($"Новое оружие: {name} ({attack} ед. атаки)");
                 Console.Write("\nВзять новое оружие? (yes/no да/нет): ");
                 string input = Console.ReadLine();
                 if (input.ToLower() == "yes" || input.ToLower() == "да")
@@ -64,8 +64,8 @@ namespace ISIP523_Bashlykova.Model
 
             if (protect > 0)
             {
-                Console.WriteLine($"\nВаша текущая броня: {player.protectionName} ({player.playerProtect} защиты)");
-                Console.WriteLine($"Новая броня: {name} ({protect} защиты)");
+                Console.WriteLine($"\nВаша текущая броня: {player.protectionName} ({player.playerProtect} ед. защиты)");
+                Console.WriteLine($"Новая броня: {name} ({protect} ед. защиты)");
                 Console.Write("\nВзять новую броню? (yes/no да/нет): ");
                 string input = Console.ReadLine();
                 if (input.ToLower() == "yes" || input.ToLower() == "да")

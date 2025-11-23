@@ -14,7 +14,7 @@ namespace ISIP523_Bashlykova.FabricMethod
         {
             double hp = Randoms.GetRandomChoice(20, 31);     
             double attack = Randoms.GetRandomChoice(10, 21); 
-            double protect = Randoms.GetRandomChoice(5, 11);
+            double protect = Randoms.GetRandomChoice(10, 16);
             double chanceKritYron = Randoms.GetRandomChoice(15, 26);
 
             return new Goblin("Гоблин", hp, attack, protect, chanceKritYron);
@@ -33,7 +33,7 @@ namespace ISIP523_Bashlykova.FabricMethod
         {
             double hp = Randoms.GetRandomChoice(40, 46);      
             double attack = Randoms.GetRandomChoice(20, 31);  
-            double protect = Randoms.GetRandomChoice(10, 21);
+            double protect = Randoms.GetRandomChoice(13, 16);
             double chanceMoroz = Randoms.GetRandomChoice(25, 36);
 
             return new Mag("Маг", hp, attack, protect, chanceMoroz);
@@ -43,7 +43,7 @@ namespace ISIP523_Bashlykova.FabricMethod
         {
             double hp = Randoms.GetRandomChoice(10, 21);  
             double attack = Randoms.GetRandomChoice(5, 16);  
-            double protect = Randoms.GetRandomChoice(3, 11); 
+            double protect = Randoms.GetRandomChoice(7, 11); 
 
             return new Slime("Слизень", hp, attack, protect);
         }

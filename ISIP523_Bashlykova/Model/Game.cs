@@ -42,7 +42,7 @@ namespace ISIP523_Bashlykova.Model
                     if (choice == "1")
                     {
                         double dealt = enemy.TakeDamage(player.playerAttack);
-                        Console.WriteLine($"\nВы нанесли {dealt} урона врагу!");
+                        Console.WriteLine($"\nВы нанесли {dealt} ед. урона врагу!");
                     }
                     else if (choice == "2")
                     {
@@ -58,7 +58,7 @@ namespace ISIP523_Bashlykova.Model
 
                 double enemyDmg = enemy.DamageToPlayer(player, protection);
                 player.playerHP -= enemyDmg;
-                Console.WriteLine($"{enemy.enemyName} нанёс вам {enemyDmg} урона!");
+                Console.WriteLine($"{enemy.enemyName} нанёс вам {enemyDmg} ед. урона!");
 
                 if (enemy is Mag magEnemy && magEnemy.FreezePlayer())
                 {
@@ -112,7 +112,6 @@ namespace ISIP523_Bashlykova.Model
                         continue;
                     }
                 }
-
 
                 bool survived = Battle(player, enemy);
                 if (!survived)
