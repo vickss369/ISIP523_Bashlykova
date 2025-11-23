@@ -13,18 +13,16 @@ namespace ISIP523_Bashlykova.Model
         public double playerAttack;
         public double playerProtect;
         public string weaponName;
-        public string armorName;
+        public string protectionName;
 
         public Player(double hp, double attack, double protect)
         {
             playerHP = hp;
             maxHP = hp;
-            playerAttack = attack;
-            playerProtect = protect;
 
             weaponName = "Кулаки";
-            playerAttack = 20;
-            armorName = "Одежда";
+            playerAttack = 15;
+            protectionName = "Одежда";
             playerProtect = 10;
         }
     }

@@ -28,15 +28,14 @@ namespace ISIP523_Bashlykova.Model
 
             if (protection)
             {
-                int evadeChance = Randoms.GetRandomChoice(1, 100);
-                if (evadeChance < 40)
+                if (Randoms.Evade())
                 {
                     Console.WriteLine("\nВы успешно уклонились от атаки!");
                     return 0;
                 }
                 else
                 {
-                    int blockPercent = Randoms.GetRandomChoice(70, 101);
+                    int blockPercent = Randoms.BlockPercent();
                     double blockValue = player.playerProtect * (blockPercent / 100.0);
                     damage -= blockValue;
                     Console.WriteLine($"\nВы не уклонились, но заблокировали {blockPercent}% ({blockValue}) урона!");
@@ -44,6 +43,14 @@ namespace ISIP523_Bashlykova.Model
                 }
             }
 
+            return damage;
+        }
+
+        public virtual double TakeDamage(double rawDamage)
+        {
+            double damage = rawDamage - enemyProtect;
+            if (damage < 0) damage = 0;
+            enemyHP -= damage;
             return damage;
         }
     }

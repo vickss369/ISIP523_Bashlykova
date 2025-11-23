@@ -10,22 +10,16 @@ namespace ISIP523_Bashlykova.Model
     {
         public double chanceKritYron;
 
-        public Goblin()
-            : base("Гоблин", 20, 15, 10)
-        {
-            chanceKritYron = 20;
-        }
-
-        public Goblin(string name, double hp, double attack, double protect)
+        public Goblin(string name, double hp, double attack, double protect, double chanceKritYron)
             : base(name, hp, attack, protect)
         {
-            chanceKritYron = 22;
+            this.chanceKritYron = chanceKritYron;
         }
 
         public override double DamageToPlayer(Player player, bool protection)
         {
             double yron = enemyAttack - player.playerProtect;
-            if (Randoms.GetRandomChoice(1, 100) < chanceKritYron)
+            if (Randoms.Critical(chanceKritYron))
             {
                 yron *= 1.5;
                 Console.WriteLine("\nГоблин нанёс критический удар!");
@@ -35,21 +29,21 @@ namespace ISIP523_Bashlykova.Model
 
             if (protection)
             {
-                int chanseToEvede = Randoms.GetRandomChoice(1, 100);
-                if (chanseToEvede < 40)
+                if (Randoms.Evade())
                 {
                     Console.WriteLine("\nВы успешно уклонились от атаки!");
                     return 0;
                 }
                 else
                 {
-                    int blockPercent = Randoms.GetRandomChoice(70, 101);
+                    int blockPercent = Randoms.BlockPercent();
                     double blockValue = player.playerProtect * (blockPercent / 100.0);
                     yron -= blockValue;
                     Console.WriteLine($"\nВы не уклонились, но заблокировали {blockPercent}% ({blockValue}) урона!");
                     if (yron < 0) yron = 0;
                 }
             }
+
             return yron;
         }
     }

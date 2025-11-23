@@ -8,23 +8,17 @@ namespace ISIP523_Bashlykova.Model
 {
     internal class Mag : Enemy
     {
-        public double chanseMoroz;
+        public double chanceFreeze;
 
-        public Mag()
-            : base("Маг", 30, 25, 20)
-        {
-            chanseMoroz = 30;
-        }
-
-        public Mag(string name, double hp, double attack, double protect)
+        public Mag(string name, double hp, double attack, double protect, double chanceFreeze)
             : base(name, hp, attack, protect)
         {
-            chanseMoroz = 33;
+            this.chanceFreeze = chanceFreeze;
         }
 
         public bool FreezePlayer()
         {
-            return Randoms.GetRandomChoice(1, 100) < chanseMoroz;
+            return Randoms.Freeze(chanceFreeze);
         }
     }
 }

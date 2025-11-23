@@ -9,97 +9,31 @@ namespace ISIP523_Bashlykova.Model
 {
     internal class Game
     {
-        enum Syndyk
-        {
-            Лечебное_зелье = 1,
-            Деревянный_меч,
-            Металлический_меч,
-            Деревянные_доспехи,
-            Железные_доспехи
-        }
-
         static void OpenSyndyk(Player player)
         {
-            Syndyk item = (Syndyk)Randoms.GetRandomChoice(1, 6);
-            Console.WriteLine($"\nВы нашли сундук! Предмет: {item}");
-
-            switch (item)
-            {
-                case Syndyk.Лечебное_зелье:
-                    player.playerHP = player.maxHP;
-                    Console.WriteLine("Вы полностью восстановили здоровье!");
-                    break;
-
-                case Syndyk.Деревянный_меч:
-                    TakeWeapon(player, "Деревянный меч", 20);
-                    break;
-
-                case Syndyk.Металлический_меч:
-                    TakeWeapon(player, "Металлический меч", 30);
-                    break;
-
-                case Syndyk.Деревянные_доспехи:
-                    TakeProtection(player, "Деревянные доспехи", 20);
-                    break;
-
-                case Syndyk.Железные_доспехи:
-                    TakeProtection(player, "Железные доспехи", 30);
-                    break;
-            }
+            Syndyk item = Syndyk.GetRandomThing();
+            Console.WriteLine($"\nВы нашли сундук! Предмет: {item.name}");
+            item.Lyt(player);
         }
 
-        static void TakeWeapon(Player player, string newWeaponName, double newWeaponAttack)
-        {
-            Console.WriteLine($"\nВаше текущее оружие: {player.weaponName} (+{player.playerAttack} атаки)");
-            Console.WriteLine($"Новое оружие: {newWeaponName} (+{newWeaponAttack} атаки)");
-            Console.Write("\nВзять новое оружие? (y/n): ");
-            string input = Console.ReadLine();
-            if (input.ToLower() == "y")
-            {
-                player.weaponName = newWeaponName;
-                player.playerAttack = newWeaponAttack;
-                Console.WriteLine($"Вы экипировали {newWeaponName}.");
-            }
-            else
-            {
-                Console.WriteLine("Вы выбросили предмет.");
-            }
-        }
-
-        static void TakeProtection(Player player, string newArmorName, double newArmorProtect)
-        {
-            Console.WriteLine($"\nВаша текущая броня: {player.armorName} (+{player.playerProtect} защиты)");
-            Console.WriteLine($"Новая броня: {newArmorName} (+{newArmorProtect} защиты)");
-            Console.Write("\nВзять новую броню? (y/n): ");
-            string input = Console.ReadLine();
-            if (input.ToLower() == "y")
-            {
-                player.armorName = newArmorName;
-                player.playerProtect = newArmorProtect;
-                Console.WriteLine($"Вы экипировали {newArmorName}.");
-            }
-            else
-            {
-                Console.WriteLine("Вы выбросили предмет.");
-            }
-        }
-
-        public static void Battle(Player player, Enemy enemy)
+        public static bool Battle(Player player, Enemy enemy)
         {
             Console.WriteLine($"Вы столкнулись с врагом: {enemy.enemyName}");
 
             bool playerFrozen = false;
+
             while (player.playerHP > 0 && enemy.enemyHP > 0)
             {
                 bool protection = false;
+
                 if (!playerFrozen)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"Ваш HP: {player.playerHP}");
+                    Console.WriteLine($"Ваш HP: {player.playerHP}, ваша сила атаки: {player.playerAttack}, ваша защита: {player.protectionName} ({player.playerProtect} защиты)");
                     Console.ResetColor();
 
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"HP врага: {enemy.enemyHP}");
+                    Console.WriteLine($"HP врага: {enemy.enemyHP}, сила атаки врага: {enemy.enemyAttack}, защита врага: {enemy.enemyProtect}");
                     Console.ResetColor();
 
                     Console.WriteLine("\n1 — Атака\n2 — Защита");
@@ -107,10 +41,8 @@ namespace ISIP523_Bashlykova.Model
 
                     if (choice == "1")
                     {
-                        double yron = player.playerAttack - enemy.enemyProtect;
-                        if (yron < 1) yron = 5;
-                        enemy.enemyHP -= yron;
-                        Console.WriteLine($"\nВы нанесли {yron} урона врагу!");
+                        double dealt = enemy.TakeDamage(player.playerAttack);
+                        Console.WriteLine($"\nВы нанесли {dealt} урона врагу!");
                     }
                     else if (choice == "2")
                     {
@@ -142,41 +74,54 @@ namespace ISIP523_Bashlykova.Model
                 if (player.playerHP <= 0)
                 {
                     Console.WriteLine("\nВы погибли...(");
-                    Environment.Exit(0);
+                    return false;
                 }
             }
 
             Console.WriteLine($"\nВы победили врага {enemy.enemyName}!\n");
+            return true;
         }
+
         public void playGame()
         {
-            Player player = new Player(100, 20, 10);
+            Player player = new Player(100, 10, 10);
             int turn = 0;
+            bool isPlaying = true;
 
-            while (true)
+            while (isPlaying)
             {
                 turn++;
                 Console.WriteLine($"\n~~~ Ход {turn} ~~~");
 
+                Enemy enemy = null;
+
                 if (turn % 10 == 0)
                 {
-                    Enemy boss = Factory.GenerateBoss();
+                    enemy = Factory.GenerateBoss();
                     Console.WriteLine("ВНИМАНИЕ!!! БОСС!!!!!");
-                    Battle(player, boss);
                 }
                 else
                 {
-                    if (Randoms.GetRandomChoice(1, 101) < 50)
+                    if (Randoms.Chance(0.5))
                     {
-                        Enemy enemy = Factory.GenerateEnemy();
-                        Battle(player, enemy);
+                        enemy = Factory.GenerateEnemy();
                     }
                     else
                     {
                         OpenSyndyk(player);
+                        continue;
                     }
                 }
+
+
+                bool survived = Battle(player, enemy);
+                if (!survived)
+                {
+                    isPlaying = false;
+                }
             }
+            Console.WriteLine("Игра окончена. Нажмите любую клавишу для выхода...");
+            Console.ReadKey();
         }
     }
 }

@@ -45,12 +45,24 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="*.cs" />
+    <Compile Include="Model\Enemy.cs" />
+    <Compile Include="Model\Game.cs" />
+    <Compile Include="Model\Goblin.cs" />
+    <Compile Include="Model\Mag.cs" />
+    <Compile Include="Model\outt.cs" />
+    <Compile Include="Model\Pestov.cs" />
+    <Compile Include="Model\Player.cs" />
+    <Compile Include="Model\Protection.cs" />
+    <Compile Include="Model\Randoms.cs" />
+    <Compile Include="Model\Skelet.cs" />
+    <Compile Include="Model\Slime.cs" />
+    <Compile Include="Model\Syndyk.cs" />
+    <Compile Include="Model\Weapon.cs" />
+    <Compile Include="FabricMethod\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="NewFolder1\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
