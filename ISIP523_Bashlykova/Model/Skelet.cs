@@ -14,21 +14,17 @@ namespace ISIP523_Bashlykova.Model
         public Skelet(string name, double hp, double attack, double protect)
             : base(name, hp, attack, protect) { }
 
-        public override double DamageToPlayer(Player player, bool protection)
+        public override double DamageToPlayer(Player player)
         {
             double damage = enemyAttack;
-
-            if (protection)
+            int evadeChance = Randoms.GetRandomChoice(1, 100);
+            if (evadeChance < 40)
             {
-                int evadeChance = Randoms.GetRandomChoice(1, 100);
-                if (evadeChance < 40)
-                {
-                    Console.WriteLine("\nВы успешно уклонились от атаки!");
-                    return 0;
-                }
-                Console.WriteLine("\nСкелет проигнорировал вашу защиту!");
+                Console.WriteLine("\nВы успешно уклонились от атаки!");
+                return 0;
             }
 
+            Console.WriteLine("\nСкелет проигнорировал вашу защиту!");
             return damage;
         }
     }

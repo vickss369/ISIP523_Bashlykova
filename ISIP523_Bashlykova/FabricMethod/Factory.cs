@@ -69,8 +69,8 @@ namespace ISIP523_Bashlykova.FabricMethod
                 case 0: return new Goblin("ВВГ (босс гоблинов)", Randoms.GetRandomChoice(20, 26)*2, Randoms.GetRandomChoice(10, 16)*1.5, Randoms.GetRandomChoice(10, 16)*1.2, Randoms.GetRandomChoice(15, 26));
                 case 1: return new Skelet("Ковальский (босс скелетов)", Randoms.GetRandomChoice(30, 36)*2.5, Randoms.GetRandomChoice(15, 21)*1.3, Randoms.GetRandomChoice(10, 16)*1.4);
                 case 2: return new Mag("Архимаг С++ (босс магов)", Randoms.GetRandomChoice(40, 46)*1.8, Randoms.GetRandomChoice(20, 26)*1.6, Randoms.GetRandomChoice(10, 16)*1.1, Randoms.GetRandomChoice(25, 36));
-                case 3: return new Pestov();
-                default: return new Pestov();
+                case 3: return null;
+                default: return null;
             }
         }
     }

@@ -18,7 +18,7 @@ namespace ISIP523_Bashlykova.Model
 
         public bool FreezePlayer()
         {
-            return Randoms.Freeze(chanceFreeze);
+            return Randoms.Freeze();
         }
     }
 }

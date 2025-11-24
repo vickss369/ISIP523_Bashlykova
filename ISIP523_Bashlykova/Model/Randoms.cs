@@ -17,9 +17,9 @@ namespace ISIP523_Bashlykova.Model
             return rand.NextDouble() < chance;
         }
 
-        public static bool Evade(int percentChance = 40) //уклон от следующей атаки врага
+        public static bool Evade() //уклон от следующей атаки врага
         {
-            return GetRandomChoice(1, 101) <= percentChance;
+            return Chance(0.4);
         }
 
         public static int BlockPercent(int min = 70, int max = 100) //процент уменьшения получаемого урона на 70–100% от характеристики защиты 
@@ -27,14 +27,14 @@ namespace ISIP523_Bashlykova.Model
             return GetRandomChoice(min, max + 1);
         }
 
-        public static bool Critical(double chancePercent) //шанс критического урона
+        public static bool Critical() //шанс критического урона
         {
-            return GetRandomChoice(1, 101) <= chancePercent;
+            return Chance(0.3);
         }
 
-        public static bool Freeze(double chancePercent) //шанс заморозки
+        public static bool Freeze() //шанс заморозки
         {
-            return GetRandomChoice(1, 101) <= chancePercent;
+            return Chance(0.3);
         }
     }
 }

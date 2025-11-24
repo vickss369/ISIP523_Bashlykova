@@ -11,7 +11,7 @@ namespace ISIP523_Bashlykova.Model
         public Slime(string name, double hp, double attack, double protect)
             : base(name, hp, attack, protect) { }
 
-        public override double TakeDamage(double rawDamage)
+        public override void TakeDamage(double rawDamage)
         {
             rawDamage -= 2;
             if (rawDamage < 0) rawDamage = 0;
@@ -20,7 +20,6 @@ namespace ISIP523_Bashlykova.Model
             if (damage < 0) damage = 0;
 
             enemyHP -= damage;
-            return damage;
         }
     }
 }

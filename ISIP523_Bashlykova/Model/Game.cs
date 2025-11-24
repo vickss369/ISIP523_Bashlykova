@@ -23,20 +23,18 @@ namespace ISIP523_Bashlykova.Model
         {
             Console.WriteLine($"Вы столкнулись с врагом: {enemy.enemyName}");
 
-            bool playerFrozen = false;
+            bool protection = false;
 
             while (player.playerHP > 0 && enemy.enemyHP > 0)
             {
-                bool protection = false;
-
-                if (!playerFrozen)
+                if (!player.isFrozen)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"Ваш HP: {player.playerHP}, ваша сила атаки: {player.playerAttack}, ваша защита: {player.protectionName} ({player.playerProtect} защиты)");
+                    Console.WriteLine($"Ваш HP: {player.playerHP}, сила атаки: {player.playerAttack}, защита: {player.protectionName} ({player.playerProtect})");
                     Console.ResetColor();
 
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"HP врага: {enemy.enemyHP}, сила атаки врага: {enemy.enemyAttack}, защита врага: {enemy.enemyProtect}");
+                    Console.WriteLine($"HP врага: {enemy.enemyHP}, сила атаки: {enemy.enemyAttack}, защита: {enemy.enemyProtect}");
                     Console.ResetColor();
 
                     Console.WriteLine("\n1 — Атака\n2 — Защита");
@@ -44,34 +42,37 @@ namespace ISIP523_Bashlykova.Model
 
                     if (choice == "1")
                     {
-                        double dealt = enemy.TakeDamage(player.playerAttack);
+                        double dealt = player.DamageToEnemy(enemy);
                         Console.WriteLine($"\nВы нанесли {dealt} ед. урона врагу!");
+                        protection = false;
                     }
                     else if (choice == "2")
                     {
                         protection = true;
+                        player.TryEvade();
                     }
                 }
                 else
                 {
-                    playerFrozen = false;
+                    Console.WriteLine("\nВы заморожены и пропускаете ход!");
+                    player.isFrozen = false;
                 }
 
                 if (enemy.enemyHP <= 0) break;
 
-                double enemyDmg = enemy.DamageToPlayer(player, protection);
+                double enemyDmg = enemy.DamageToPlayer(player);
                 player.playerHP -= enemyDmg;
                 Console.WriteLine($"{enemy.enemyName} нанёс вам {enemyDmg} ед. урона!");
 
                 if (enemy is Mag magEnemy && magEnemy.FreezePlayer())
                 {
-                    Console.WriteLine("\nВы заморожены магией врага!\nВы не можете ходить и пропускаете свой ход.");
-                    playerFrozen = true;
+                    Console.WriteLine("\nВы заморожены магией врага! Пропускаете следующий ход.");
+                    player.isFrozen = true;
                 }
                 else if (enemy is Pestov pestovEnemy && pestovEnemy.FreezePlayer())
                 {
-                    Console.WriteLine("\nПестов использовал свою особую способность!\nВы заморожены и пропускаете следующий ход.");
-                    playerFrozen = true;
+                    Console.WriteLine("\nПестов использовал свою особую способность! Пропускаете следующий ход.");
+                    player.isFrozen = true;
                 }
 
                 if (player.playerHP <= 0)
@@ -122,6 +123,7 @@ namespace ISIP523_Bashlykova.Model
                     isPlaying = false;
                 }
             }
+
             Console.WriteLine("Игра окончена. Нажмите любую клавишу для выхода...");
             Console.ReadKey();
         }

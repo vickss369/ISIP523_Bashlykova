@@ -21,37 +21,24 @@ namespace ISIP523_Bashlykova.Model
             this.enemyProtect = enemyProtect;
         }
 
-        public virtual double DamageToPlayer(Player player, bool protection)
+        public virtual double DamageToPlayer(Player player)
         {
+            if (player.isFrozen)
+            {
+                Console.WriteLine("Вы заморожены и не можете действовать!");
+                return 0;
+            }
+
             double damage = enemyAttack - player.playerProtect;
             if (damage < 0) damage = 0;
 
-            if (protection)
-            {
-                if (Randoms.Evade())
-                {
-                    Console.WriteLine("\nВы успешно уклонились от атаки!");
-                    return 0;
-                }
-                else
-                {
-                    int blockPercent = Randoms.BlockPercent();
-                    double blockValue = player.playerProtect * (blockPercent / 100.0);
-                    damage -= blockValue;
-                    Console.WriteLine($"\nВы не уклонились, но заблокировали {blockPercent}% ({blockValue} ед.) урона!");
-                    if (damage < 0) damage = 0;
-                }
-            }
-
             return damage;
         }
-
-        public virtual double TakeDamage(double rawDamage)
+        public virtual void TakeDamage(double rawDamage)
         {
             double damage = rawDamage - enemyProtect;
             if (damage < 0) damage = 0;
             enemyHP -= damage;
-            return damage;
         }
     }
 }
